@@ -1,0 +1,14 @@
+# Flask - Web framework for Python
+Flask==3.0.0
+
+# Flask-CORS - Cross-Origin Resource Sharing support for React frontend
+# This allows the React app to make requests to the Flask backend
+flask-cors==4.0.0
+
+# Requests - HTTP library for making API calls to Clash Royale API
+requests==2.31.0
+
+# Python-dotenv - For loading environment variables (optional, for future use)
+python-dotenv==1.0.0
+
+

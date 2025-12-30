@@ -1,0 +1,109 @@
+/* Clash Royale themed global styles */
+:root {
+  font-family: system-ui, -apple-system, "Segoe UI", Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  /* Clash Royale color scheme */
+  --cr-dark-blue: #1a237e;
+  --cr-royal-blue: #3949ab;
+  --cr-light-blue: #5c6bc0;
+  --cr-gold: #ffd700;
+  --cr-dark-gold: #daa520;
+  --cr-purple: #7b1fa2;
+  --cr-dark-bg: #0d1117;
+  --cr-card-bg: #1c2128;
+  --cr-border: #30363d;
+
+  color: #e6edf3;
+  background: linear-gradient(135deg, var(--cr-dark-bg) 0%, #161b22 100%);
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, var(--cr-dark-bg) 0%, #161b22 100%);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  color: var(--cr-gold);
+  font-weight: 700;
+}
+
+a {
+  font-weight: 500;
+  color: var(--cr-light-blue);
+  text-decoration: none;
+  transition: color 0.3s;
+}
+
+a:hover {
+  color: var(--cr-gold);
+}
+
+button {
+  border-radius: 8px;
+  border: 2px solid var(--cr-royal-blue);
+  padding: 0.6em 1.5em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  background: linear-gradient(135deg, var(--cr-royal-blue) 0%, var(--cr-dark-blue) 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s;
+  box-shadow: 0 4px 6px rgba(57, 73, 171, 0.3);
+}
+
+button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(57, 73, 171, 0.5);
+  border-color: var(--cr-gold);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+input {
+  background: var(--cr-card-bg);
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  padding: 0.6em 1em;
+  color: white;
+  font-size: 1em;
+  transition: border-color 0.3s;
+}
+
+input:focus {
+  outline: none;
+  border-color: var(--cr-royal-blue);
+}
+
+input::placeholder {
+  color: #6e7681;
+}

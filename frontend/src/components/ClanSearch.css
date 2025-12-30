@@ -1,0 +1,132 @@
+.clan-search {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.clan-results {
+  animation: fadeIn 0.5s;
+}
+
+.clan-card {
+  background: linear-gradient(135deg, var(--cr-card-bg) 0%, #252c38 100%);
+  border: 2px solid var(--cr-purple);
+  border-radius: 12px;
+  padding: 2rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 24px rgba(123, 31, 162, 0.4);
+}
+
+.clan-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--cr-border);
+}
+
+.clan-header h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.clan-tag {
+  color: var(--cr-light-blue);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.clan-description {
+  text-align: center;
+  color: #c9d1d9;
+  font-style: italic;
+  margin-bottom: 2rem;
+  padding: 1rem;
+  background: rgba(57, 73, 171, 0.1);
+  border-radius: 8px;
+}
+
+.clan-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.5rem;
+}
+
+.members-section {
+  background: var(--cr-card-bg);
+  border: 2px solid var(--cr-royal-blue);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 4px 12px rgba(57, 73, 171, 0.3);
+}
+
+.members-section h3 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.members-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(57, 73, 171, 0.1);
+  border: 1px solid var(--cr-border);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.member-item:hover {
+  border-color: var(--cr-royal-blue);
+  transform: translateX(5px);
+  box-shadow: 0 4px 8px rgba(57, 73, 171, 0.2);
+}
+
+.member-rank {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--cr-gold);
+  min-width: 40px;
+}
+
+.member-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.member-name {
+  font-weight: 600;
+  color: white;
+}
+
+.member-role {
+  font-size: 0.85rem;
+  color: var(--cr-light-blue);
+  text-transform: capitalize;
+}
+
+.member-trophies {
+  font-weight: 700;
+  color: var(--cr-gold);
+  font-size: 1.1rem;
+}
+
+@media (max-width: 768px) {
+  .clan-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .member-item {
+    flex-wrap: wrap;
+  }
+
+  .member-rank {
+    min-width: 30px;
+  }
+}

@@ -10,6 +10,7 @@ function CardList() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState("all")
+  const [elixirSort, setElixirSort] = useState("none")
 
   useEffect(() => {
     fetchCards()
@@ -38,12 +39,20 @@ function CardList() {
     }
   }
 
-  // Ensure cards is always an array before filtering
-  const filteredCards = Array.isArray(cards) 
-    ? cards.filter((card) => {
-        if (filter === "all") return true
-        return card.rarity?.toLowerCase() === filter.toLowerCase()
-      })
+  const filteredCards = Array.isArray(cards)
+    ? cards
+        .filter((card) => {
+          if (filter === "all") return true
+          return card.rarity?.toLowerCase() === filter.toLowerCase()
+        })
+        .sort((a, b) => {
+          if (elixirSort === "ascending") {
+            return (a.elixirCost || 0) - (b.elixirCost || 0)
+          } else if (elixirSort === "descending") {
+            return (b.elixirCost || 0) - (a.elixirCost || 0)
+          }
+          return 0
+        })
     : []
 
   const getRarityColor = (rarity) => {
@@ -81,6 +90,18 @@ function CardList() {
             Champion
           </button>
         </div>
+        <div className="sort-buttons">
+          <span className="sort-label">Sort by Elixir:</span>
+          <button className={elixirSort === "none" ? "active" : ""} onClick={() => setElixirSort("none")}>
+            Default
+          </button>
+          <button className={elixirSort === "ascending" ? "active" : ""} onClick={() => setElixirSort("ascending")}>
+            Low to High ⚡
+          </button>
+          <button className={elixirSort === "descending" ? "active" : ""} onClick={() => setElixirSort("descending")}>
+            High to Low ⚡
+          </button>
+        </div>
       </div>
 
       {loading && (
@@ -108,11 +129,18 @@ function CardList() {
                   loading="lazy"
                 />
               )}
-              <h4 className="card-name">{card.name}</h4>
-              <span className="card-rarity" style={{ color: getRarityColor(card.rarity) }}>
-                {card.rarity}
-              </span>
-              {card.elixirCost && <span className="card-elixir">⚡ {card.elixirCost}</span>}
+              <div className="card-details">
+                <h4 className="card-name">{card.name}</h4>
+                <span className="card-rarity" style={{ color: getRarityColor(card.rarity) }}>
+                  {card.rarity}
+                </span>
+                {card.elixirCost !== undefined && card.elixirCost !== null && (
+                  <div className="card-elixir">
+                    <span className="elixir-icon">⚡</span>
+                    <span className="elixir-value">{card.elixirCost}</span>
+                  </div>
+                )}
+              </div>
             </div>
           ))}
         </div>

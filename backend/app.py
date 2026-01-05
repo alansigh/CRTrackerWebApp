@@ -14,7 +14,7 @@ The application structure:
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import config
-from routes import player_bp, clan_bp, card_bp, tournament_bp
+from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp
 
 
 def create_app(config_name='default'):
@@ -47,6 +47,7 @@ def create_app(config_name='default'):
     app.register_blueprint(clan_bp)     # /api/clans/* routes
     app.register_blueprint(card_bp)     # /api/cards/* routes
     app.register_blueprint(tournament_bp)  # /api/tournaments/* routes
+    app.register_blueprint(leaderboard_bp)
     
     # Root endpoint - API health check
     @app.route('/')

@@ -230,7 +230,14 @@ class ClashRoyaleService:
         endpoint = "cards"
         return self._make_request(endpoint)
     
-    
+    def get_pol_leaderboard(self, season: str) -> Dict[str, Any]:
+        if (season == 'current'):
+            endpoint = "locations/global/pathoflegend/players"
+            return self._make_request(endpoint)
+        else:
+            endpoint = f'locations/global/pathoflegend/{season}/rankings/players'
+            return self._make_request(endpoint)
+
     def get_tournaments(self, name: str) -> Dict[str, Any]:
         """
         Search for tournaments by name.

@@ -153,10 +153,12 @@ class ClashRoyaleService:
                 - location, badgeUrls
                 - memberList: List of all clan members
         """
-        clean_tag = clan_tag.replace('#', '').upper()
-        encoded_tag = clean_tag.replace('#', '%23')
+        if clan_tag.startswith('#'):
+            clan_tag = '%23' + clan_tag[1:]
+        else :
+            clan_tag = '%23'+clan_tag
         
-        endpoint = f"clans/{encoded_tag}"
+        endpoint = f"clans/{clan_tag}"
         return self._make_request(endpoint)
     
     def get_clan_members(self, clan_tag: str) -> Dict[str, Any]:
@@ -268,7 +270,6 @@ class ClashRoyaleService:
 
 
 # TODO: Add custom data processing methods here
-# Example methods you might want to implement:
 # - get_player_statistics_summary(player_tag): Process player data into custom format
 # - get_clan_war_statistics(clan_tag): Analyze clan war performance
 # - compare_players(player_tag1, player_tag2): Compare two players

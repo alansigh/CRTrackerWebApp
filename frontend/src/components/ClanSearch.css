@@ -86,6 +86,15 @@
   box-shadow: 0 4px 8px rgba(57, 73, 171, 0.2);
 }
 
+/* Added clickable cursor style for member items */
+.member-item.clickable {
+  cursor: pointer;
+}
+
+.member-item.clickable:hover {
+  background: rgba(57, 73, 171, 0.2);
+}
+
 .member-rank {
   font-size: 1.2rem;
   font-weight: 700;
@@ -117,6 +126,353 @@
   font-size: 1.1rem;
 }
 
+/* Added player results section reused from PlayerSearch */
+.player-results {
+  animation: fadeIn 0.5s;
+  margin-bottom: 2rem;
+}
+
+.player-card {
+  background: linear-gradient(135deg, var(--cr-card-bg) 0%, #252c38 100%);
+  border: 2px solid var(--cr-royal-blue);
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 8px 24px rgba(57, 73, 171, 0.4);
+}
+
+.player-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 2px solid var(--cr-border);
+}
+
+.player-header h3 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.player-tag {
+  color: var(--cr-light-blue);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.back-button {
+  margin-bottom: 1.5rem;
+  padding: 0.75rem 1.5rem;
+  background: var(--cr-royal-blue);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.back-button:hover {
+  background: var(--cr-purple);
+  transform: translateX(-5px);
+}
+
+.view-navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: rgba(57, 73, 171, 0.1);
+  border-radius: 8px;
+}
+
+.view-navigation button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--cr-light-blue);
+  border: 1px solid var(--cr-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.view-navigation button:hover {
+  border-color: var(--cr-royal-blue);
+  background: rgba(57, 73, 171, 0.2);
+}
+
+.view-navigation button.active {
+  background: var(--cr-royal-blue);
+  color: white;
+  border-color: var(--cr-royal-blue);
+}
+
+.player-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.stat-item {
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.stat-item:hover {
+  border-color: var(--cr-royal-blue);
+  transform: scale(1.05);
+}
+
+.stat-label {
+  display: block;
+  color: #8b949e;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-value {
+  display: block;
+  color: white;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+.stat-value.gold {
+  color: var(--cr-gold);
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.stat-value.green {
+  color: #4ade80;
+}
+
+.stat-value.red {
+  color: #f87171;
+}
+
+.deck-view {
+  min-height: 300px;
+}
+
+.deck-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--cr-gold);
+}
+
+/* Updated deck cards to 2 rows × 4 columns layout with proper spacing */
+.deck-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.deck-card-item {
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.deck-card-item:hover {
+  border-color: var(--cr-royal-blue);
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(57, 73, 171, 0.3);
+}
+
+.deck-card-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-name {
+  font-weight: 600;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.card-level {
+  color: var(--cr-light-blue);
+  font-size: 0.85rem;
+}
+
+.battlelog-view {
+  min-height: 300px;
+}
+
+.battlelog-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--cr-gold);
+}
+
+.battle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.battle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(57, 73, 171, 0.1);
+  border: 1px solid var(--cr-border);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.battle-item:hover {
+  border-color: var(--cr-royal-blue);
+  background: rgba(57, 73, 171, 0.15);
+}
+
+.battle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.battle-type {
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+}
+
+.battle-time {
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.battle-result {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.crowns {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.crowns.win {
+  color: #4ade80;
+}
+
+.crowns.loss {
+  color: #f87171;
+}
+
+.result-win {
+  padding: 0.25rem 0.75rem;
+  background: #4ade80;
+  color: #0f172a;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.result-loss {
+  padding: 0.25rem 0.75rem;
+  background: #f87171;
+  color: #0f172a;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.badges-view {
+  min-height: 300px;
+}
+
+.badges-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--cr-gold);
+}
+
+.badges-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.badge-item:hover {
+  border-color: var(--cr-royal-blue);
+  transform: scale(1.05);
+}
+
+.badge-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.badge-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.badge-name {
+  font-weight: 600;
+  color: white;
+}
+
+.badge-progress {
+  font-size: 0.85rem;
+  color: var(--cr-light-blue);
+}
+
+.player-arena {
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-royal-blue);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.player-arena h4 {
+  color: var(--cr-gold);
+  margin-bottom: 0.5rem;
+}
+
+.player-arena p {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
   .clan-stats {
     grid-template-columns: repeat(2, 1fr);
@@ -128,5 +484,27 @@
 
   .member-rank {
     min-width: 30px;
+  }
+
+  .player-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .view-navigation {
+    flex-wrap: wrap;
+  }
+
+  /* Keep 2 rows × 4 columns on mobile but allow scrolling if needed */
+  .deck-cards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .badges-list {
+    grid-template-columns: 1fr;
   }
 }

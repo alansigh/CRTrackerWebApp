@@ -154,7 +154,7 @@ def get_clan_war_log(clan_tag: str):
         service = get_clash_royale_service()
         war_log = service.get_clan_war_log(clan_tag)
         
-        # TODO: Add custom processing here
+        # TODO: Add custom processing
         # Example: Calculate win rate, filter by date, aggregate statistics
         # win_rate = calculate_clan_war_win_rate(war_log)
         # war_log['statistics'] = {
@@ -207,7 +207,7 @@ def get_clan_current_war(clan_tag: str):
         service = get_clash_royale_service()
         current_war = service.get_clan_current_war(clan_tag)
         
-        # TODO: Add custom processing here
+        # TODO: Add custom processing
         # Example: Calculate progress, filter participant data, format timestamps
         # if current_war.get('state') == 'warDay':
         #     progress = calculate_war_progress(current_war)

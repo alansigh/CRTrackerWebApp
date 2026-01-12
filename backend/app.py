@@ -36,17 +36,14 @@ def create_app(config_name='default'):
     # Load configuration from config.py
     app.config.from_object(config[config_name])
     
-    # Enable CORS (Cross-Origin Resource Sharing) for React frontend
-    # This allows the React app running on a different port (e.g., localhost:5173)
-    # to make API requests to this Flask backend
+    # Enable CORS for React frontend
     CORS(app, origins=app.config['CORS_ORIGINS'], supports_credentials=True)
     
-    # Register blueprints (modular route groups)
-    # Blueprints help organize routes into logical groups
-    app.register_blueprint(player_bp)   # /api/players/* routes
-    app.register_blueprint(clan_bp)     # /api/clans/* routes
-    app.register_blueprint(card_bp)     # /api/cards/* routes
-    app.register_blueprint(tournament_bp)  # /api/tournaments/* routes
+    # Register blueprints 
+    app.register_blueprint(player_bp)   
+    app.register_blueprint(clan_bp)     
+    app.register_blueprint(card_bp)    
+    app.register_blueprint(tournament_bp)  
     app.register_blueprint(leaderboard_bp)
     
     # Root endpoint - API health check
@@ -169,9 +166,8 @@ if __name__ == '__main__':
     app = create_app('default')
     
     # Run the Flask development server
-    # In production, use a production WSGI server like Gunicorn
     app.run(
-        debug=True,           # Enable debug mode for development
-        host='0.0.0.0',       # Allow connections from any IP
-        port=5050             # Default Flask port
+        debug=True,          
+        host='0.0.0.0',       
+        port=5050             
     )

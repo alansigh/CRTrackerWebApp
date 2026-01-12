@@ -91,6 +91,39 @@
   font-weight: 600;
 }
 
+/* Added navigation buttons for different views */
+.view-navigation {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: rgba(57, 73, 171, 0.1);
+  border-radius: 8px;
+}
+
+.view-navigation button {
+  flex: 1;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  color: var(--cr-light-blue);
+  border: 1px solid var(--cr-border);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.3s;
+  font-weight: 600;
+}
+
+.view-navigation button:hover {
+  border-color: var(--cr-royal-blue);
+  background: rgba(57, 73, 171, 0.2);
+}
+
+.view-navigation button.active {
+  background: var(--cr-royal-blue);
+  color: white;
+  border-color: var(--cr-royal-blue);
+}
+
 .player-stats {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -133,12 +166,223 @@
   text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
 }
 
+/* Added green and red color classes for wins/losses */
+.stat-value.green {
+  color: #4ade80;
+}
+
+.stat-value.red {
+  color: #f87171;
+}
+
+/* Added styles for deck view */
+.deck-view {
+  min-height: 300px;
+}
+
+.deck-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--cr-gold);
+}
+
+/* Updated deck cards to 2 rows × 4 columns layout with proper spacing */
+.deck-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.5rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.deck-card-item {
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.deck-card-item:hover {
+  border-color: var(--cr-royal-blue);
+  transform: translateY(-5px);
+  box-shadow: 0 4px 12px rgba(57, 73, 171, 0.3);
+}
+
+.deck-card-item img {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  margin-bottom: 0.5rem;
+}
+
+.card-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.card-name {
+  font-weight: 600;
+  color: white;
+  font-size: 0.9rem;
+}
+
+.card-level {
+  color: var(--cr-light-blue);
+  font-size: 0.85rem;
+}
+
+/* Added styles for battle log view */
+.battlelog-view {
+  min-height: 300px;
+}
+
+.battlelog-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--cr-gold);
+}
+
+.battle-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.battle-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: rgba(57, 73, 171, 0.1);
+  border: 1px solid var(--cr-border);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.battle-item:hover {
+  border-color: var(--cr-royal-blue);
+  background: rgba(57, 73, 171, 0.15);
+}
+
+.battle-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.battle-type {
+  font-weight: 600;
+  color: white;
+  text-transform: capitalize;
+}
+
+.battle-time {
+  font-size: 0.85rem;
+  color: #8b949e;
+}
+
+.battle-result {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.crowns {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.crowns.win {
+  color: #4ade80;
+}
+
+.crowns.loss {
+  color: #f87171;
+}
+
+.result-win {
+  padding: 0.25rem 0.75rem;
+  background: #4ade80;
+  color: #0f172a;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+.result-loss {
+  padding: 0.25rem 0.75rem;
+  background: #f87171;
+  color: #0f172a;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+
+/* Added styles for badges view */
+.badges-view {
+  min-height: 300px;
+}
+
+.badges-view h4 {
+  text-align: center;
+  margin-bottom: 1.5rem;
+  color: var(--cr-gold);
+}
+
+.badges-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-border);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.badge-item:hover {
+  border-color: var(--cr-royal-blue);
+  transform: scale(1.05);
+}
+
+.badge-item img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+}
+
+.badge-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.badge-name {
+  font-weight: 600;
+  color: white;
+}
+
+.badge-progress {
+  font-size: 0.85rem;
+  color: var(--cr-light-blue);
+}
+
 .player-clan {
   background: rgba(123, 31, 162, 0.1);
   border: 2px solid var(--cr-purple);
   border-radius: 8px;
   padding: 1.5rem;
   text-align: center;
+  margin-bottom: 1rem;
 }
 
 .player-clan h4 {
@@ -150,6 +394,25 @@
   font-size: 1.2rem;
   font-weight: 600;
   margin-bottom: 0.5rem;
+}
+
+/* Added styles for player arena */
+.player-arena {
+  background: rgba(57, 73, 171, 0.1);
+  border: 2px solid var(--cr-royal-blue);
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.player-arena h4 {
+  color: var(--cr-gold);
+  margin-bottom: 0.5rem;
+}
+
+.player-arena p {
+  font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .clan-tag {
@@ -168,5 +431,19 @@
 
   .stat-value {
     font-size: 1.5rem;
+  }
+
+  .view-navigation {
+    flex-wrap: wrap;
+  }
+
+  /* Keep 2 rows × 4 columns on mobile but allow scrolling if needed */
+  .deck-cards {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+
+  .badges-list {
+    grid-template-columns: 1fr;
   }
 }

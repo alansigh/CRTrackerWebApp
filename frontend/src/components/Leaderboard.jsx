@@ -5,9 +5,7 @@ import "./Leaderboard.css"
 
 const API_BASE_URL = "http://localhost:5050/api"
 
-const normalizeCardLevel = (card) => {
-  // Card max levels by rarity:
-  // Common: 15, Rare: 13, Epic: 10, Legendary: 8, Champion: 5
+const calculateDisplayLevel = (card) => {
   const maxLevels = {
     common: 15,
     rare: 13,
@@ -18,21 +16,15 @@ const normalizeCardLevel = (card) => {
 
   const rarity = card.rarity?.toLowerCase()
   const currentLevel = card.level
-  const maxLevel = maxLevels[rarity]
+  const maxLevel = card.maxLevel || maxLevels[rarity]
 
   if (!maxLevel) {
     return currentLevel
   }
 
-  // If card is at max level or 1 below max, it should be level 15
-  if (currentLevel >= maxLevel - 1) {
-    return 15
-  }
-
-  // Otherwise, scale the level proportionally to level 15
-  // Formula: (currentLevel / maxLevel) * 15
-  const normalizedLevel = Math.round((currentLevel / maxLevel) * 15)
-  return normalizedLevel
+  // Formula: displayLevel = 16 - (maxLevel - currentLevel)
+  const displayLevel = 16 - (maxLevel - currentLevel)
+  return displayLevel
 }
 
 const generateSeasonOptions = () => {
@@ -203,7 +195,7 @@ function Leaderboard() {
                               />
                               <div className="card-info">
                                 <span className="card-name">{card.name}</span>
-                                <span className="card-level">Lv {normalizeCardLevel(card)}</span>
+                                <span className="card-level">Lv {calculateDisplayLevel(card)}</span>
                               </div>
                             </div>
                           ))}

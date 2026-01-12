@@ -1,6 +1,6 @@
 # Clash Royale Tracker
 
-A web application for tracking and analyzing Clash Royale player statistics, clan information, cards, and tournament data. Built with React (Vite) frontend and Flask backend, integrating with the official Clash Royale API.
+A web application for tracking and analyzing Clash Royale player statistics, clan information, cards, and current and past leaderboard data. Built with React (Vite) frontend and Flask backend, integrating with the official Clash Royale API.
 
 ## 📋 Table of Contents
 
@@ -300,53 +300,6 @@ Here are some example tags you can use for testing (these are real player/clan t
 - `GET /api/cards/rarity/<rarity>` - Get cards by rarity
 - `GET /api/tournaments/search?name=<name>` - Search tournaments
 
-## 🚧 Future Development
-
-<!-- 
-  ============================================
-  EDIT THIS SECTION TO ADD YOUR FUTURE PLANS
-  ============================================
-  
-  Add your planned features, improvements, and development goals below:
--->
-
-### Planned Features
-
-- [ ] User authentication and profiles
-- [ ] Save favorite players and clans
-- [ ] Player comparison tool
-- [ ] Deck builder with card recommendations
-- [ ] Historical data tracking and trends
-- [ ] Advanced statistics and analytics
-- [ ] Push notifications for clan wars
-- [ ] Mobile app version
-- [ ] Social features (sharing, comments)
-
-### Improvements
-
-- [ ] Add data caching to reduce API calls
-- [ ] Implement rate limiting protection
-- [ ] Add unit and integration tests
-- [ ] Performance optimization
-- [ ] Enhanced error messages and user feedback
-- [ ] Dark/light theme toggle
-- [ ] Internationalization (i18n) support
-- [ ] Accessibility improvements (WCAG compliance)
-
-### Technical Debt
-
-- [ ] Refactor Next.js wrapper integration (currently using both Next.js and Vite)
-- [ ] Standardize on single frontend framework
-- [ ] Add database for storing user preferences
-- [ ] Implement API request caching layer
-- [ ] Add comprehensive logging system
-
-<!-- 
-  ============================================
-  END OF EDITABLE SECTION
-  ============================================
--->
-
 ## 📚 API Documentation
 
 For detailed API documentation, see:
@@ -463,5 +416,5 @@ For issues, questions, or contributions, please open an issue on the GitHub repo
 
 ---
 
-**Happy Tracking! 🎮👑**
+
 

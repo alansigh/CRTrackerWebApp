@@ -51,7 +51,7 @@ def get_all_cards():
         service = get_clash_royale_service()
         cards_data = service.get_cards()
         
-        # TODO: Add custom processing here
+        # TODO: Add custom processing
         # Example: Filter by rarity, sort by elixir cost, group by type
         # cards = cards_data.get('items', [])
         # 

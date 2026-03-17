@@ -2,7 +2,7 @@
 
 A web application for tracking and analyzing Clash Royale player statistics, clan information, cards, and current and past leaderboard data. Built with React (Vite) frontend and Flask backend, integrating with the official Clash Royale API.
 
-## 📋 Table of Contents
+## Table of Contents
 
 - [Prerequisites](#prerequisites)
 - [Project Structure](#project-structure)
@@ -15,7 +15,7 @@ A web application for tracking and analyzing Clash Royale player statistics, cla
 - [Troubleshooting](#troubleshooting)
 - [Contributing](#contributing)
 
-## 🔧 Prerequisites
+## Prerequisites
 
 Before you begin, ensure you have the following installed on your local machine:
 
@@ -37,7 +37,7 @@ python3 --version  # or python --version on Windows
 git --version
 ```
 
-## 📁 Project Structure
+## Project Structure
 
 ```
 CRTrackerWebApp/
@@ -69,7 +69,7 @@ CRTrackerWebApp/
 └── README.md              # This file
 ```
 
-## 🚀 Local Setup Instructions
+## Local Setup Instructions
 
 ### Step 1: Clone the Repository
 
@@ -130,7 +130,7 @@ pip install --user -r requirements.txt
    eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzUxMiIsImtpZCI6...
    ```
 
-**⚠️ Important:** Never commit `api_key.txt` to version control. It's already included in `.gitignore`.
+**Important:** Never commit `api_key.txt` to version control. It's already included in `.gitignore`.
 
 ### Step 3: Frontend Setup
 
@@ -153,7 +153,7 @@ yarn install
 pnpm install
 ```
 
-## 🏃 Running the Application
+## Running the Application
 
 The application consists of two separate servers that need to run simultaneously:
 
@@ -209,7 +209,7 @@ Open your web browser and navigate to:
 
 The React frontend will automatically connect to the Flask backend API.
 
-## 🧪 Testing the Application
+## Testing the Application
 
 ### Test Backend API Directly
 
@@ -255,34 +255,38 @@ Here are some example tags you can use for testing (these are real player/clan t
 
 **Note:** Player and clan tags are case-insensitive, but the `#` symbol must be URL encoded as `%23` when used in URLs.
 
-## ✨ Current Features
+## Current Features
 
 ### Backend Features
 
-- ✅ RESTful API endpoints for Clash Royale data
-- ✅ Player information and statistics
-- ✅ Player battle logs
-- ✅ Player current deck extraction from most recent battle
-- ✅ Clan information and member lists
-- ✅ Clan war logs and current war status
-- ✅ Complete card database
-- ✅ Tournament search functionality
-- ✅ CORS enabled for frontend integration
-- ✅ Comprehensive error handling
-- ✅ Modular architecture with Flask Blueprints
-- ✅ Service layer abstraction for API calls
+- RESTful API endpoints for Clash Royale data
+- Player information and statistics
+- Player battle logs
+- Player current deck extraction from most recent battle
+- Clan information and member lists
+- Clan war logs and current war status
+- Complete card database
+- Tournament search functionality
+- CORS enabled for frontend integration
+- Comprehensive error handling
+- Modular architecture with Flask Blueprints
+- Service layer abstraction for API calls
 
 ### Frontend Features
 
-- ✅ Modern, responsive React UI
-- ✅ Player search and statistics display
-- ✅ Clan search and information display
-- ✅ Card browser with rarity filtering
-- ✅ Leaderboard functionality
-- ✅ Tab-based navigation
-- ✅ Clash Royale themed design
-- ✅ Loading states and error handling
-- ✅ Mobile-responsive layout
+- Modern, responsive React UI
+- Player search and statistics display
+- Clan search and information display
+- Card browser with rarity filtering
+- Leaderboard functionality, including:
+  - Displaying top players and clans
+  - Viewing player decks (prioritizing ranked decks with fallback to general decks)
+  - Displaying the type of battle the deck was used in
+  - Accurately calculating and displaying card levels based on max level standards
+- Tab-based navigation
+- Clash Royale themed design
+- Loading states and error handling
+- Mobile-responsive layout
 
 ### API Endpoints
 
@@ -300,7 +304,7 @@ Here are some example tags you can use for testing (these are real player/clan t
 - `GET /api/cards/rarity/<rarity>` - Get cards by rarity
 - `GET /api/tournaments/search?name=<name>` - Search tournaments
 
-## 📚 API Documentation
+## API Documentation
 
 For detailed API documentation, see:
 - [Backend README](backend/README.md) - Comprehensive backend API documentation
@@ -331,7 +335,7 @@ Error responses:
 }
 ```
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 ### Backend Issues
 
@@ -390,7 +394,7 @@ Error responses:
 - Solution: Clash Royale API has rate limits. Wait a few minutes and try again
 - Consider implementing caching for frequently accessed data
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create a feature branch (`git checkout -b feature/amazing-feature`)
@@ -398,11 +402,11 @@ Error responses:
 4. Push to the branch (`git push origin feature/amazing-feature`)
 5. Open a Pull Request
 
-## 📝 License
+## License
 
 This project is for educational purposes. Make sure to comply with Clash Royale API Terms of Service.
 
-## 🔗 Useful Links
+## Useful Links
 
 - [Clash Royale API Developer Portal](https://developer.clashroyale.com/)
 - [Clash Royale API Documentation](https://developer.clashroyale.com/api-docs)
@@ -410,7 +414,7 @@ This project is for educational purposes. Make sure to comply with Clash Royale 
 - [React Documentation](https://react.dev/)
 - [Vite Documentation](https://vitejs.dev/)
 
-## 📧 Support
+## Support
 
 For issues, questions, or contributions, please open an issue on the GitHub repository.
 

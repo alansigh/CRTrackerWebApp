@@ -184,9 +184,6 @@ def get_current_deck(player_tag: str):
           - maxLevel: Maximum card level
           - iconUrls: Card image URLs
     
-    Example request:
-        GET /api/players/%23P0LYJC8L/currentdeck
-    
     Note: Returns an empty array if the player has no recent battles
     """
     try:
@@ -255,7 +252,86 @@ def get_current_deck(player_tag: str):
             'error': 'An unexpected error occurred while fetching current deck'
         }), 500
 
-
+@player_bp.route('/<player_tag>/currentrankeddeck', methods=['GET'])
+def get_current_ranked_deck(player_tag: str):
+    """
+    Same as current deck service but only returns the deck if the battle type is ranked.
+    """
+    try:
+        service = get_clash_royale_service()
+        # Get battle log - API returns an array directly (most recent first)
+        battle_log = service.get_player_battle_log(player_tag)
+        
+        # Check if battle log is empty or invalid
+        if not battle_log or not isinstance(battle_log, list) or len(battle_log) == 0:
+            return jsonify({
+                'success': True,
+                'data': [],
+                'message': 'No recent battles found for this player'
+            }), 200
+        
+        found = False
+        for battle in battle_log:
+            if battle['type'] == 'pathOfLegend':
+                most_recent_battle = battle
+                found = True
+                break
+        
+        if not found:
+            return jsonify({
+                'success': False,
+                'error': 'No ranked battles found for this player'
+            }), 404
+        
+        # Extract the player's deck from the team array
+        # The 'team' array contains player objects, team[0] is the requesting player
+        team = most_recent_battle.get('team', [])
+        
+        if not team or len(team) == 0:
+            return jsonify({
+                'success': False,
+                'error': 'No team data found in the most recent battle'
+            }), 404
+        
+        # Get the first player's deck (the requesting player)
+        player_data = team[0]
+        deck = player_data.get('cards', [])
+        
+        # TODO: Add custom processing here
+        # Example: Add card details, calculate deck statistics, format data
+        # You could fetch full card information from the cards endpoint
+        # and merge it with the deck data for more detailed information
+        
+        return jsonify({
+            'success': True,
+            'data': deck,
+            'battleTime': most_recent_battle.get('battleTime'),
+            'battleType': most_recent_battle.get('type'),
+            'gameMode': most_recent_battle.get('gameMode', {}).get('name')
+        }), 200
+        
+    except ValueError as e:
+        # Handle API errors (404, 403, 429, etc.)
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 400
+        
+    except (KeyError, IndexError, TypeError) as e:
+        # Handle data structure errors
+        current_app.logger.error(f"Error parsing battle log for {player_tag}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'Failed to extract deck from battle log. Battle data structure may be invalid.'
+        }), 500
+        
+    except Exception as e:
+        # Handle unexpected errors
+        current_app.logger.error(f"Error fetching current deck for {player_tag}: {str(e)}")
+        return jsonify({
+            'success': False,
+            'error': 'An unexpected error occurred while fetching current deck'
+        }), 500
 
 @player_bp.route('/<player_tag>/stats', methods=['GET'])
 def get_player_stats(player_tag: str):

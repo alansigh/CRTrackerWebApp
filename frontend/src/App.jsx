@@ -1,52 +1,80 @@
 "use client"
 
 import { useState } from "react"
-import "./App.css"
+import WebGLBackground from "./components/WebGLBackground"
+import LandingPage from "./components/LandingPage"
 import PlayerSearch from "./components/PlayerSearch"
 import ClanSearch from "./components/ClanSearch"
 import CardList from "./components/CardList"
 import Leaderboard from "./components/Leaderboard"
-import Header from "./components/Header"
 
 function App() {
-  const [activeTab, setActiveTab] = useState("players")
+  const [showApp, setShowApp] = useState(false);
+  const [activeTab, setActiveTab] = useState("players");
+
+  const launchApp = () => {
+    setShowApp(true);
+    // Smooth scroll to top when launching app
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const returnToLanding = () => {
+    setShowApp(false);
+  };
 
   return (
-    <div className="app">
-      <Header />
+    <>
+      {/* Global Cinematic Overlays */}
+      <WebGLBackground />
+      <div className="noise-overlay" />
+      <div className="crt-scanlines" />
 
-      <nav className="tab-navigation">
-        <button
-          className={`tab-button ${activeTab === "players" ? "active" : ""}`}
-          onClick={() => setActiveTab("players")}
-        >
-          Players
-        </button>
-        <button className={`tab-button ${activeTab === "clans" ? "active" : ""}`} onClick={() => setActiveTab("clans")}>
-          Clans
-        </button>
-        <button className={`tab-button ${activeTab === "cards" ? "active" : ""}`} onClick={() => setActiveTab("cards")}>
-          Cards
-        </button>
-        <button
-          className={`tab-button ${activeTab === "leaderboard" ? "active" : ""}`}
-          onClick={() => setActiveTab("leaderboard")}
-        >
-          Leaderboard
-        </button>
-      </nav>
+      {!showApp ? (
+        <LandingPage onLaunchApp={launchApp} />
+      ) : (
+        <div className="relative z-10 min-h-screen text-ivory">
+          
+          {/* Main App Navigation Header */}
+          <header className="sticky top-0 z-40 bg-obsidian/80 backdrop-blur-xl border-b border-champagne/20 px-6 py-4 shadow-skeuo-outset">
+            <div className="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+              <div 
+                className="cursor-pointer flex items-center gap-3 font-sans font-bold text-xl tracking-tight text-ivory hover:text-champagne transition-colors"
+                onClick={returnToLanding}
+              >
+                <div className="w-3 h-3 rounded-full bg-champagne text-glow-champagne" />
+                CRTRACKER // TERMINAL
+              </div>
 
-      <main className="main-content">
-        {activeTab === "players" && <PlayerSearch />}
-        {activeTab === "clans" && <ClanSearch />}
-        {activeTab === "cards" && <CardList />}
-        {activeTab === "leaderboard" && <Leaderboard />}
-      </main>
+              <nav className="flex items-center gap-2 p-1 bg-obsidian rounded-xl shadow-skeuo-inset border border-slate-light/30">
+                {['players', 'clans', 'cards', 'leaderboard'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`px-6 py-2 rounded-lg font-mono text-sm capitalize transition-all duration-300 ${
+                      activeTab === tab 
+                        ? 'bg-champagne text-obsidian shadow-glow-champagne' 
+                        : 'text-slate-400 hover:text-ivory hover:bg-slate-light/20'
+                    }`}
+                  >
+                    {tab}
+                  </button>
+                ))}
+              </nav>
+            </div>
+          </header>
 
-      <footer className="app-footer">
-        <p>Powered by Clash Royale API | Built with React & Flask</p>
-      </footer>
-    </div>
+          {/* Main Content Area */}
+          <main className="max-w-7xl mx-auto px-6 py-12">
+            <div className="bg-obsidian rounded-[2rem] border border-slate-light p-6 md:p-10 shadow-skeuo-outset min-h-[70vh]">
+              {activeTab === "players" && <PlayerSearch />}
+              {activeTab === "clans" && <ClanSearch />}
+              {activeTab === "cards" && <CardList />}
+              {activeTab === "leaderboard" && <Leaderboard />}
+            </div>
+          </main>
+        </div>
+      )}
+    </>
   )
 }
 

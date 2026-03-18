@@ -45,6 +45,7 @@ def create_app(config_name='default'):
     app.register_blueprint(card_bp)    
     app.register_blueprint(tournament_bp)  
     app.register_blueprint(leaderboard_bp)
+    app.register_blueprint(deck_bp)
     
     # Root endpoint - API health check
     @app.route('/')

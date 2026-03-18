@@ -49,17 +49,41 @@ def get_decks():
         for player in players_to_check:
             try:
                 player_tag = player.get('tag')
-                player_info = service.get_player_info(player_tag)
-                current_deck = player_info.get('currentDeck', [])
+                if not player_tag:
+                    continue
+                
+                # Fetch battle log to find the current ranked deck
+                battle_log = service.get_player_battle_log(player_tag)
+                
+                if not battle_log or not isinstance(battle_log, list) or len(battle_log) == 0:
+                    continue
+                
+                most_recent_ranked_battle = None
+                for battle in battle_log:
+                    if battle.get('type') == 'pathOfLegend':
+                        most_recent_ranked_battle = battle
+                        break
+                
+                if not most_recent_ranked_battle:
+                    continue
+                
+                team = most_recent_ranked_battle.get('team', [])
+                if not team or len(team) == 0:
+                    continue
+                
+                player_data = team[0]
+                current_ranked_deck = player_data.get('cards', [])
                 
                 # Check if all specified cards are in the deck
-                deck_card_names = [card.get('name', '').lower() for card in current_deck]
+                deck_card_names = [card.get('name', '').lower() for card in current_ranked_deck]
                 
                 if all(card_name in deck_card_names for card_name in cards_list):
+                    player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
+                    player_name = player_info.get('name') if player_info else 'Unknown'
                     matching_decks.append({
-                        'player_name': player_info.get('name'),
+                        'player_name': player_name,
                         'player_tag': player_tag,
-                        'deck': current_deck
+                        'deck': current_ranked_deck
                     })
             except Exception as e:
                 current_app.logger.warning(f"Error fetching player {player.get('tag')}: {str(e)}")

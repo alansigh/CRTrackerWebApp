@@ -14,12 +14,6 @@ card_bp = Blueprint('cards', __name__, url_prefix='/api/cards')
 
 
 def get_clash_royale_service() -> ClashRoyaleService:
-    """
-    Helper function to get an initialized ClashRoyaleService instance.
-    
-    Returns:
-        ClashRoyaleService: Initialized service instance
-    """
     return ClashRoyaleService(
         api_key=current_app.config['CLASH_ROYALE_API_KEY'],
         base_url=current_app.config['CLASH_ROYALE_API_BASE_URL'],

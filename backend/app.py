@@ -14,7 +14,7 @@ The application structure:
 from flask import Flask, jsonify
 from flask_cors import CORS
 from config import config
-from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp
+from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp, deck_bp
 
 
 def create_app(config_name='default'):

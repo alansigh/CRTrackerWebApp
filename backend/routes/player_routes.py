@@ -15,15 +15,6 @@ player_bp = Blueprint('players', __name__, url_prefix='/api/players')
 
 
 def get_clash_royale_service() -> ClashRoyaleService:
-    """
-    Helper function to get an initialized ClashRoyaleService instance.
-    
-    This retrieves configuration from Flask's current_app context
-    and creates a service instance with the proper API credentials.
-    
-    Returns:
-        ClashRoyaleService: Initialized service instance
-    """
     return ClashRoyaleService(
         api_key=current_app.config['CLASH_ROYALE_API_KEY'],
         base_url=current_app.config['CLASH_ROYALE_API_BASE_URL'],

@@ -9,12 +9,6 @@ from flask import current_app
 leaderboard_bp = Blueprint('leaderboards', __name__, url_prefix='/api/leaderboards')
 
 def get_clash_royale_service() -> ClashRoyaleService:
-    """
-    Helper function to get an initialized ClashRoyaleService instance.
-    
-    Returns:
-        ClashRoyaleService: Initialized service instance
-    """
     return ClashRoyaleService(
         api_key=current_app.config['CLASH_ROYALE_API_KEY'],
         base_url=current_app.config['CLASH_ROYALE_API_BASE_URL'],

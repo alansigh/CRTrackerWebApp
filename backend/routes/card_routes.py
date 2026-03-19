@@ -121,17 +121,14 @@ def get_card_info(name: str):
     try:
         service = get_clash_royale_service()
         cards_data = service.get_cards()
-
         all_cards = cards_data.get('items', [])
         for card in all_cards:
-            if card.get('name', '').lower() == name.lower():
+            if card.get('name') == name:
                 searched_card = card
-
+        print(searched_card)
         return jsonify({
             'success': True,
-            'data': {
-                searched_card
-            }
+            'data': searched_card
         })
         
 
@@ -141,5 +138,51 @@ def get_card_info(name: str):
             'success': False,
             'error': 'An unexpected error occurred while fetching card info'
         }), 500
+    
+@card_bp.route('/ability/<ability>', methods =['GET'])
+def get_ability_cards(ability: str):
+    try:
+        service = get_clash_royale_service()
+        cards_data = service.get_cards()
+        all_cards = cards_data.get('items', [])
+        filtered_cards = []
+
+        """
+        When maxEvolutionLevel is 3, card has a heroic and an evo, if 1 only has evo
+        if 2 only has heroic
+        """
+
+        if (ability == 'evolution'):
+            filtered_cards = [
+                card for card in all_cards
+                if card.get('maxEvolutionLevel') == 3 or card.get('maxEvolutionLevel') == 1
+            ]
+        elif (ability == 'heroic'): 
+            filtered_cards = [
+                card for card in all_cards
+                if card.get('maxEvolutionLevel') == 3 or card.get('maxEvolutionLevel') == 2
+            ]
+        else:
+            return jsonify({
+                'success': False,
+                'error': 'Must specify ability as evolution or heroic'
+            }), 400
+
+        return jsonify({
+            'success': True,
+            'data': {
+                'items': filtered_cards,
+                'count': len(filtered_cards)
+            }
+        }), 200
+
+
+    except Exception as e:
+        current_app.logger.error(f"Error fetching card info by name {name}: {str(e)}")
+        return jsonify({
+        'success': False,
+        'error': 'An unexpected error occurred while fetching card info'
+        }), 500
+
 
 

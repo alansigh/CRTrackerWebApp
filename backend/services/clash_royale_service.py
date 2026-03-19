@@ -266,9 +266,9 @@ class ClashRoyaleService:
         """
         endpoint = "clans"
         params = {'minScore': 40000, 'limit': min(limit, 200)}
-        return self._make_request(endpoint, params=params)
+        return self._make_request(endpoint, params=params)   
     
-    
+
 
 
 # TODO: Add custom data processing methods here

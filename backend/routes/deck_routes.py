@@ -18,6 +18,50 @@ def get_clash_royale_service() -> ClashRoyaleService:
         timeout=current_app.config.get('API_REQUEST_TIMEOUT', 30)
     )
 
+from concurrent.futures import ThreadPoolExecutor
+
+def check_player(player_data, position, cards_list, service):
+    try:
+        player_tag = player_data.get('tag')
+        if not player_tag:
+            return None
+
+        # Fetch battle log to find the current ranked deck
+        battle_log = service.get_player_battle_log(player_tag)
+        
+        if not battle_log or not isinstance(battle_log, list) or len(battle_log) == 0:
+            return None
+        
+        most_recent_ranked_battle = None
+        for battle in battle_log:
+            if battle.get('type') == 'pathOfLegend':
+                most_recent_ranked_battle = battle
+                break
+        
+        if not most_recent_ranked_battle:
+            return None
+        
+        team = most_recent_ranked_battle.get('team', [])
+        if not team or len(team) == 0:
+            return None
+        
+        player_team_data = team[0]
+        current_ranked_deck = player_team_data.get('cards', [])
+        # Check if all specified cards are in the deck
+        deck_card_names = [card.get('name', '') for card in current_ranked_deck]
+        if all(card_name in deck_card_names for card_name in cards_list):
+            player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
+            player_name = player_info.get('name') if player_info else 'Unknown'
+            return {
+                'player_name': player_name,
+                'player_tag': player_tag,
+                'position': position,
+                'deck': current_ranked_deck
+            }
+    except Exception as e:
+        pass
+    return None
+
 @deck_bp.route('/', methods=['GET'])
 def get_decks():
     try:
@@ -28,66 +72,34 @@ def get_decks():
                 'error': 'Please provide the cards parameter (e.g., ?cards=c1,c2)'
             }), 400
         
-        cards_list = [c.strip().lower() for c in cards_param.split(',')]
+        cards_list = [c.strip() for c in cards_param.split(',')]
         if len(cards_list) < 1 or len(cards_list) > 8:
             return jsonify({
                 'success': False,
                 'error': 'You must provide between 1 and 8 cards for filtering'
             }), 400
         
+
         service = get_clash_royale_service()
         # Fetch leaderboard
         leaderboard_data = service.get_pol_leaderboard('current')
         players = leaderboard_data.get('items', [])
         
-        # Limit to top 50 to avoid timeout issues
+        # We can now handle 1000 since it is concurrent
         LIMIT = 1000
         players_to_check = players[:LIMIT]
         
         matching_decks = []
         
-        for player in players_to_check:
-            try:
-                player_tag = player.get('tag')
-                if not player_tag:
-                    continue
+        with ThreadPoolExecutor(max_workers=20) as executor:
+            futures = []
+            for position, player in enumerate(players_to_check, 1):
+                futures.append(executor.submit(check_player, player, position, cards_list, service))
                 
-                # Fetch battle log to find the current ranked deck
-                battle_log = service.get_player_battle_log(player_tag)
-                
-                if not battle_log or not isinstance(battle_log, list) or len(battle_log) == 0:
-                    continue
-                
-                most_recent_ranked_battle = None
-                for battle in battle_log:
-                    if battle.get('type') == 'pathOfLegend':
-                        most_recent_ranked_battle = battle
-                        break
-                
-                if not most_recent_ranked_battle:
-                    continue
-                
-                team = most_recent_ranked_battle.get('team', [])
-                if not team or len(team) == 0:
-                    continue
-                
-                player_data = team[0]
-                current_ranked_deck = player_data.get('cards', [])
-                
-                # Check if all specified cards are in the deck
-                deck_card_names = [card.get('name', '').lower() for card in current_ranked_deck]
-                
-                if all(card_name in deck_card_names for card_name in cards_list):
-                    player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
-                    player_name = player_info.get('name') if player_info else 'Unknown'
-                    matching_decks.append({
-                        'player_name': player_name,
-                        'player_tag': player_tag,
-                        'deck': current_ranked_deck
-                    })
-            except Exception as e:
-                current_app.logger.warning(f"Error fetching player {player.get('tag')}: {str(e)}")
-                continue
+            for future in futures:
+                result = future.result()
+                if result:
+                    matching_decks.append(result)
                 
         return jsonify({
             'success': True,

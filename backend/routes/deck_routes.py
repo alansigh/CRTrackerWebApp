@@ -20,6 +20,20 @@ def get_clash_royale_service() -> ClashRoyaleService:
 
 from concurrent.futures import ThreadPoolExecutor
 
+def is_card_in_deck(req_card, deck):
+    target_evo = None
+    if req_card.startswith('1') or req_card.startswith('2'):
+        target_evo = int(req_card[0])
+        target_name = req_card[1:]
+    else:
+        target_name = req_card
+    
+    for c in deck:
+        if c.get('name') == target_name:
+            if target_evo is None or c.get('evolutionLevel') == target_evo:
+                return True
+    return False
+
 def check_player(player_data, position, cards_list, service):
     try:
         player_tag = player_data.get('tag')
@@ -48,8 +62,7 @@ def check_player(player_data, position, cards_list, service):
         player_team_data = team[0]
         current_ranked_deck = player_team_data.get('cards', [])
         # Check if all specified cards are in the deck
-        deck_card_names = [card.get('name', '') for card in current_ranked_deck]
-        if all(card_name in deck_card_names for card_name in cards_list):
+        if all(is_card_in_deck(req_card, current_ranked_deck) for req_card in cards_list):
             player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
             player_name = player_info.get('name') if player_info else 'Unknown'
             return {

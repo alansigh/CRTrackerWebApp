@@ -157,7 +157,7 @@ def get_ability_cards(ability: str):
                 card for card in all_cards
                 if card.get('maxEvolutionLevel') == 3 or card.get('maxEvolutionLevel') == 1
             ]
-        elif (ability == 'heroic'): 
+        elif (ability == 'heroes'): 
             filtered_cards = [
                 card for card in all_cards
                 if card.get('maxEvolutionLevel') == 3 or card.get('maxEvolutionLevel') == 2
@@ -165,7 +165,7 @@ def get_ability_cards(ability: str):
         else:
             return jsonify({
                 'success': False,
-                'error': 'Must specify ability as evolution or heroic'
+                'error': 'Must specify ability as evolution or heroes'
             }), 400
 
         return jsonify({

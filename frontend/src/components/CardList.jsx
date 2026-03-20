@@ -7,6 +7,8 @@ const API_BASE_URL = "http://localhost:5050/api"
 
 function CardList() {
   const [cards, setCards] = useState([])
+  const [evolutionCards, setEvolutionCards] = useState([])
+  const [heroCards, setHeroCards] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState("all")
@@ -21,15 +23,23 @@ function CardList() {
     setError(null)
 
     try {
-      const response = await fetch(`${API_BASE_URL}/cards/`)
-      const data = await response.json()
+      const [cardsRes, evosRes, heroesRes] = await Promise.all([
+        fetch(`${API_BASE_URL}/cards/`),
+        fetch(`${API_BASE_URL}/cards/ability/evolution`),
+        fetch(`${API_BASE_URL}/cards/ability/heroes`)
+      ])
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.error || "Failed to fetch cards")
-      }
+      const cardsData = await cardsRes.json()
+      const evosData = await evosRes.json()
+      const heroesData = await heroesRes.json()
 
-      const cardsArray = data.data?.items || []
-      setCards(Array.isArray(cardsArray) ? cardsArray : [])
+      if (!cardsRes.ok || !cardsData.success) throw new Error(cardsData.error || "Failed to fetch cards")
+      if (!evosRes.ok || !evosData.success) throw new Error(evosData.error || "Failed to fetch evolutions")
+      if (!heroesRes.ok || !heroesData.success) throw new Error(heroesData.error || "Failed to fetch heroes")
+
+      setCards(Array.isArray(cardsData.data?.items) ? cardsData.data.items : [])
+      setEvolutionCards(Array.isArray(evosData.data?.items) ? evosData.data.items : [])
+      setHeroCards(Array.isArray(heroesData.data?.items) ? heroesData.data.items : [])
     } catch (err) {
       setError(err.message)
     } finally {
@@ -37,21 +47,26 @@ function CardList() {
     }
   }
 
-  const filteredCards = Array.isArray(cards)
-    ? cards
-        .filter((card) => {
-          if (filter === "all") return true
-          return card.rarity?.toLowerCase() === filter.toLowerCase()
-        })
-        .sort((a, b) => {
-          if (elixirSort === "ascending") {
-            return (a.elixirCost || 0) - (b.elixirCost || 0)
-          } else if (elixirSort === "descending") {
-            return (b.elixirCost || 0) - (a.elixirCost || 0)
-          }
-          return 0
-        })
-    : []
+  const applyFilters = (cardList) => {
+    if (!Array.isArray(cardList)) return []
+    return cardList
+      .filter((card) => {
+        if (filter === "all") return true
+        return card.rarity?.toLowerCase() === filter.toLowerCase()
+      })
+      .sort((a, b) => {
+        if (elixirSort === "ascending") {
+          return (a.elixirCost || 0) - (b.elixirCost || 0)
+        } else if (elixirSort === "descending") {
+          return (b.elixirCost || 0) - (a.elixirCost || 0)
+        }
+        return 0
+      })
+  }
+
+  const filteredCards = applyFilters(cards)
+  const filteredEvos = applyFilters(evolutionCards)
+  const filteredHeroes = applyFilters(heroCards)
 
   const getRarityColorClass = (rarity) => {
     const colors = {
@@ -62,6 +77,46 @@ function CardList() {
       champion: "text-cyan-400 border-cyan-400/50 hover:border-cyan-400",
     }
     return colors[rarity?.toLowerCase()] || "text-slate-400 border-slate-400/50"
+  }
+
+  const renderCard = (card, mode = 'normal') => {
+    const rarityClasses = getRarityColorClass(card.rarity);
+    
+    let iconUrl = card.iconUrls?.medium;
+    if (mode === 'evolution' && card.iconUrls?.evolutionMedium) {
+      iconUrl = card.iconUrls.evolutionMedium;
+    } else if (mode === 'hero' && card.iconUrls?.heroMedium) {
+      iconUrl = card.iconUrls.heroMedium;
+    }
+
+    return (
+      <div 
+        key={`${mode}-${card.id || card.name}`} 
+        className={`bg-[#181822] rounded-2xl border-2 p-4 flex flex-col items-center justify-between shadow-skeuo-outset group hover:-translate-y-2 hover:scale-[1.05] transition-all duration-300 cursor-pointer ${rarityClasses}`}
+      >
+        <div className="absolute top-2 left-2 flex items-center justify-center w-6 h-6 rounded-full bg-obsidian border border-slate-light shadow-skeuo-inset font-mono text-[10px] text-ivory">
+          {card.elixirCost !== undefined ? card.elixirCost : '?'}
+          <Zap size={8} className="text-purple-400 ml-[1px]" />
+        </div>
+        
+        {iconUrl && (
+          <div className="relative w-full aspect-[3/4] mt-6 mb-4 select-none">
+            <img
+              src={iconUrl}
+              alt={card.name}
+              className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_20px_20px_rgba(201,168,76,0.3)] transition-all duration-300"
+              loading="lazy"
+              draggable="false"
+            />
+          </div>
+        )}
+        
+        <div className="w-full text-center">
+          <h4 className="font-sans font-bold text-sm text-ivory leading-tight truncate px-1">{card.name}</h4>
+          <span className="font-mono text-[9px] uppercase tracking-widest mt-1 block opacity-80">{card.rarity}</span>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -139,45 +194,38 @@ function CardList() {
 
       {!loading && !error && (
         <>
-          <div className="font-mono text-xs text-slate-500 mb-2 pl-4 border-l-2 border-champagne/30">
-            INDEXING {filteredCards.length} RECORDS
+          <div className="font-mono text-xs text-slate-500 mb-6 pl-4 border-l-2 border-champagne/30">
+            INDEXING {filteredCards.length + filteredEvos.length + filteredHeroes.length} RECORDS
           </div>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
-            {filteredCards.map((card) => {
-              const rarityClasses = getRarityColorClass(card.rarity);
-              return (
-                <div 
-                  key={card.id || card.name} 
-                  className={`bg-[#181822] rounded-2xl border-2 p-4 flex flex-col items-center justify-between shadow-skeuo-outset group hover:-translate-y-2 hover:scale-[1.05] transition-all duration-300 cursor-pointer ${rarityClasses}`}
-                >
-                  <div className="absolute top-2 left-2 flex items-center justify-center w-6 h-6 rounded-full bg-obsidian border border-slate-light shadow-skeuo-inset font-mono text-[10px] text-ivory">
-                    {card.elixirCost !== undefined ? card.elixirCost : '?'}
-                    <Zap size={8} className="text-purple-400 ml-[1px]" />
-                  </div>
-                  
-                  {card.iconUrls?.medium && (
-                    <div className="relative w-full aspect-[3/4] mt-6 mb-4 select-none">
-                      <img
-                        src={card.iconUrls.medium}
-                        alt={card.name}
-                        className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_20px_20px_rgba(201,168,76,0.3)] transition-all duration-300"
-                        loading="lazy"
-                        draggable="false"
-                      />
-                    </div>
-                  )}
-                  
-                  <div className="w-full text-center">
-                    <h4 className="font-sans font-bold text-sm text-ivory leading-tight truncate px-1">{card.name}</h4>
-                    <span className="font-mono text-[9px] uppercase tracking-widest mt-1 block opacity-80">{card.rarity}</span>
-                  </div>
-                </div>
-              )
-            })}
-          </div>
+          {filteredEvos.length > 0 && (
+            <div className="mb-12">
+              <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">EVOLUTIONS</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {filteredEvos.map((card) => renderCard(card, 'evolution'))}
+              </div>
+            </div>
+          )}
+
+          {filteredHeroes.length > 0 && (
+            <div className="mb-12">
+              <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">HEROES</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {filteredHeroes.map((card) => renderCard(card, 'hero'))}
+              </div>
+            </div>
+          )}
+
+          {filteredCards.length > 0 && (
+            <div className="mb-12">
+              <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">ALL CARDS</h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+                {filteredCards.map((card) => renderCard(card, 'normal'))}
+              </div>
+            </div>
+          )}
           
-          {filteredCards.length === 0 && (
+          {filteredCards.length === 0 && filteredEvos.length === 0 && filteredHeroes.length === 0 && (
             <div className="bg-obsidian border border-slate-light/30 rounded-xl p-12 text-center font-mono text-slate-500 shadow-skeuo-inset">
               NO RECORDS FOUND MATCHING CURRENT FILTER PARAMETERS.
             </div>

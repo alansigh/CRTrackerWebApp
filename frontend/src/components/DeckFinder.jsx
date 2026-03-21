@@ -11,6 +11,10 @@ function DeckFinder() {
   const [error, setError] = useState(null)
   const [sortType, setSortType] = useState('none')
   const [sortDir, setSortDir] = useState('asc')
+  const [selectedCards, setSelectedCards] = useState([])
+  const [foundDecks, setFoundDecks] = useState([])
+  const [searching, setSearching] = useState(false)
+  const [searchError, setSearchError] = useState(null)
 
   useEffect(() => {
     fetchCards()
@@ -86,6 +90,46 @@ function DeckFinder() {
     return sortDir === 'asc' ? comparison : -comparison
   })
 
+  const toggleCardSelection = (card) => {
+    const isSelected = selectedCards.some(c => c.displayId === card.displayId)
+    if (isSelected) {
+      setSelectedCards(selectedCards.filter(c => c.displayId !== card.displayId))
+    } else {
+      if (selectedCards.length < 8) {
+        setSelectedCards([...selectedCards, card])
+      }
+    }
+  }
+
+  const handleSearch = async () => {
+    if (selectedCards.length === 0) return;
+    
+    setSearching(true);
+    setSearchError(null);
+    setFoundDecks([]);
+
+    try {
+      const cardsParam = selectedCards.map(c => {
+        if (c.type === 'evolution') return `1${c.name}`;
+        if (c.type === 'hero') return `2${c.name}`;
+        return c.name;
+      }).join(',');
+
+      const response = await fetch(`${API_BASE_URL}/decks/?cards=${encodeURIComponent(cardsParam)}`);
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to find decks");
+      }
+
+      setFoundDecks(data.data || []);
+    } catch (err) {
+      setSearchError(err.message);
+    } finally {
+      setSearching(false);
+    }
+  };
+
   return (
     <div className="w-full flex flex-col gap-8 max-w-7xl mx-auto">
       {/* Header Section */}
@@ -97,7 +141,7 @@ function DeckFinder() {
         
         <div className="flex flex-col md:flex-row gap-6 justify-between items-start md:items-center">
           <p className="font-mono text-sm text-champagne/60 uppercase tracking-widest pl-9">
-            Select cards to filter top ladder decks (Functionality coming soon)
+            Select cards to filter top ladder decks ({selectedCards.length}/8)
           </p>
 
           <div className="flex flex-wrap gap-6 items-end">
@@ -150,27 +194,95 @@ function DeckFinder() {
 
       {!loading && !error && (
         <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4">
-          {sortedCards.map((card) => (
-            <div 
-              key={card.displayId} 
-              className="bg-[#181822] rounded-xl border border-slate-700/50 p-2 flex flex-col items-center justify-center opacity-40 grayscale transition-all duration-300 cursor-not-allowed"
-            >
-              <div className="relative w-full aspect-[3/4] select-none">
-                <img
-                  src={card.displayIcon}
-                  alt={card.name}
-                  className="absolute inset-0 w-full h-full object-contain"
-                  loading="lazy"
-                  draggable="false"
-                />
+          {sortedCards.map((card) => {
+            const isSelected = selectedCards.some(c => c.displayId === card.displayId);
+            const canSelect = isSelected || selectedCards.length < 8;
+
+            return (
+              <div 
+                key={card.displayId} 
+                onClick={() => toggleCardSelection(card)}
+                className={`bg-[#181822] rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-300 ${
+                  isSelected 
+                    ? 'opacity-100 grayscale-0 border-2 border-champagne shadow-glow-champagne scale-105 cursor-pointer z-10' 
+                    : `opacity-40 grayscale border border-slate-700/50 ${canSelect ? 'hover:opacity-60 cursor-pointer hover:scale-105' : 'cursor-not-allowed'}`
+                }`}
+              >
+                <div className="relative w-full aspect-[3/4] select-none">
+                  <img
+                    src={card.displayIcon}
+                    alt={card.name}
+                    className="absolute inset-0 w-full h-full object-contain"
+                    loading="lazy"
+                    draggable="false"
+                  />
+                </div>
+                <div className="w-full text-center mt-2 flex-grow flex items-center justify-center">
+                  <span className={`font-mono text-[9px] uppercase tracking-widest block truncate px-1 ${isSelected ? 'text-champagne font-bold' : 'text-slate-400'}`}>
+                    {card.name}
+                  </span>
+                </div>
               </div>
-              <div className="w-full text-center mt-2">
-                <span className="font-mono text-[9px] uppercase tracking-widest block text-slate-400 truncate px-1">
-                  {card.name}
-                </span>
+            )
+          })}
+        </div>
+      )}
+
+      {selectedCards.length > 0 && (
+        <div className="flex justify-center mt-8 mb-4">
+          <button 
+            onClick={handleSearch}
+            disabled={searching}
+            className={`px-8 py-4 rounded-xl font-mono text-lg font-bold uppercase transition-all duration-300 flex items-center gap-3 bg-champagne text-obsidian shadow-glow-champagne hover:scale-105 ${searching ? 'opacity-50 cursor-wait' : ''}`}
+          >
+            {searching ? 'SEARCHING DATABASE...' : `SEARCH DECKS (${selectedCards.length}/8)`}
+          </button>
+        </div>
+      )}
+
+      {!searching && searchError && (
+        <div className="bg-red-950/30 border border-red-500/50 rounded-xl p-4 text-red-400 font-mono text-center shadow-skeuo-inset mt-4">
+          [SEARCH ERR] {searchError}
+        </div>
+      )}
+
+      {/* Found Decks Section */}
+      {foundDecks.length > 0 && (
+        <div className="mt-8 mb-12">
+          <h2 className="font-sans font-bold text-2xl text-ivory mb-6 pl-4 border-l-4 border-champagne">
+            FOUND DECKS ({foundDecks.length})
+          </h2>
+          <div className="flex flex-col gap-6">
+            {foundDecks.map((deckObj, idx) => (
+              <div key={idx} className="bg-obsidian rounded-2xl border border-champagne/30 p-6 shadow-[0_0_15px_rgba(201,168,76,0.1)]">
+                <div className="flex justify-between items-center mb-6 border-b border-champagne/20 pb-4">
+                  <h3 className="font-mono text-xl text-champagne font-bold">{deckObj.player_name || 'Unknown'}</h3>
+                  <span className="bg-champagne/20 text-champagne px-4 py-2 rounded-full font-mono text-sm border border-champagne/50 shadow-glow-champagne">
+                    Rank: #{deckObj.position}
+                  </span>
+                </div>
+                <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
+                  {deckObj.deck.map((dc, i) => {
+                    const iconUrl = dc.evolutionLevel === 1 
+                      ? dc.iconUrls?.evolutionMedium || dc.iconUrls?.medium
+                      : dc.evolutionLevel === 2 
+                        ? dc.iconUrls?.heroMedium || dc.iconUrls?.medium
+                        : dc.iconUrls?.medium;
+
+                    return (
+                      <div key={i} className="bg-[#181822] rounded-xl p-2 border border-slate-700/50 shadow-skeuo-outset">
+                         <img 
+                           src={iconUrl} 
+                           alt={dc.name} 
+                           className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]"
+                         />
+                      </div>
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
     </div>

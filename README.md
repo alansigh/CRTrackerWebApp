@@ -50,6 +50,7 @@ CRTrackerWebApp/
 │   │   ├── player_routes.py
 │   │   ├── clan_routes.py
 │   │   ├── card_routes.py
+│   │   ├── deck_routes.py
 │   │   └── tournament_routes.py
 │   └── services/           # Service layer for API calls
 │       └── clash_royale_service.py
@@ -60,7 +61,8 @@ CRTrackerWebApp/
 │   │   │   ├── PlayerSearch.jsx
 │   │   │   ├── ClanSearch.jsx
 │   │   │   ├── CardList.jsx
-│   │   │   └── Leaderboard.jsx
+│   │   │   ├── Leaderboard.jsx
+│   │   │   └── DeckFinder.jsx
 │   │   └── main.jsx        # Entry point
 │   ├── package.json
 │   └── vite.config.js
@@ -265,7 +267,8 @@ Here are some example tags you can use for testing (these are real player/clan t
 - Player current deck extraction from most recent battle
 - Clan information and member lists
 - Clan war logs and current war status
-- Complete card database
+- Complete card database including evolutions and heroes
+- Advanced Deck Filtering Endpoint against the Top 1000 global players
 - Tournament search functionality
 - CORS enabled for frontend integration
 - Comprehensive error handling
@@ -277,7 +280,8 @@ Here are some example tags you can use for testing (these are real player/clan t
 - Modern, responsive React UI
 - Player search and statistics display
 - Clan search and information display
-- Card browser with rarity filtering
+- Card browser with rarity/elixir sorting and dedicated Evolution/Hero sections
+- Deck Finder tool enabling users to select up to 8 multi-card permutations to match real Top 1000 ladder decks natively
 - Leaderboard functionality, including:
   - Displaying top players and clans
   - Viewing player decks (prioritizing ranked decks with fallback to general decks)
@@ -302,6 +306,8 @@ Here are some example tags you can use for testing (these are real player/clan t
 - `GET /api/clans/<tag>/currentwar` - Get current clan war
 - `GET /api/cards/` - Get all cards
 - `GET /api/cards/rarity/<rarity>` - Get cards by rarity
+- `GET /api/cards/ability/<ability>` - Get Evolution and Hero cards specifically
+- `GET /api/decks/?cards=<names>` - Find top 1000 leaderboard decks containing specific cards
 - `GET /api/tournaments/search?name=<name>` - Search tournaments
 
 ## API Documentation

@@ -13,6 +13,8 @@ The application structure:
 
 from flask import Flask, jsonify
 from flask_cors import CORS
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from config import config
 from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp, deck_bp
 
@@ -32,6 +34,14 @@ def create_app(config_name='default'):
     """
     # Create Flask app instance
     app = Flask(__name__)
+    
+    # Initialize Flask-Limiter
+    limiter = Limiter(
+        get_remote_address,
+        app=app,
+        default_limits=["1000 per hour", "100 per minute"],
+        storage_uri="memory://",
+    )
     
     # Load configuration from config.py
     app.config.from_object(config[config_name])

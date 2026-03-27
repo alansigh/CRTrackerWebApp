@@ -11,4 +11,5 @@ requests==2.31.0
 # Python-dotenv - For loading environment variables (optional, for future use)
 python-dotenv==1.0.0
 
-
+# Flask-Limiter - For rate limiting API endpoints
+Flask-Limiter==3.3.1

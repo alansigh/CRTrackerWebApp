@@ -8,6 +8,13 @@ deck, based on top 1000 players and player levels
 from flask import Blueprint, jsonify, request
 from services.clash_royale_service import ClashRoyaleService
 from flask import current_app
+import time
+from threading import Lock
+
+DECK_CACHE_DATA = []
+DECK_CACHE_TIMESTAMP = 0.0
+CACHE_LOCK = Lock()
+CACHE_TTL = 600  # 10 minutes
 
 deck_bp = Blueprint('decks', __name__, url_prefix='/api/decks')
 
@@ -34,7 +41,7 @@ def is_card_in_deck(req_card, deck):
                 return True
     return False
 
-def check_player(player_data, position, cards_list, service):
+def fetch_player_deck(player_data, position, service):
     try:
         player_tag = player_data.get('tag')
         if not player_tag:
@@ -61,16 +68,15 @@ def check_player(player_data, position, cards_list, service):
         
         player_team_data = team[0]
         current_ranked_deck = player_team_data.get('cards', [])
-        # Check if all specified cards are in the deck
-        if all(is_card_in_deck(req_card, current_ranked_deck) for req_card in cards_list):
-            player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
-            player_name = player_info.get('name') if player_info else 'Unknown'
-            return {
-                'player_name': player_name,
-                'player_tag': player_tag,
-                'position': position,
-                'deck': current_ranked_deck
-            }
+        
+        player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
+        player_name = player_info.get('name') if isinstance(player_info, dict) else 'Unknown'
+        return {
+            'player_name': player_name,
+            'player_tag': player_tag,
+            'position': position,
+            'deck': current_ranked_deck
+        }
     except Exception as e:
         pass
     return None
@@ -94,25 +100,37 @@ def get_decks():
         
 
         service = get_clash_royale_service()
-        # Fetch leaderboard
-        leaderboard_data = service.get_pol_leaderboard('current')
-        players = leaderboard_data.get('items', [])
         
-        # We can now handle 1000 since it is concurrent
-        LIMIT = 1000
-        players_to_check = players[:LIMIT]
-        
-        matching_decks = []
-        
-        with ThreadPoolExecutor(max_workers=20) as executor:
-            futures = []
-            for position, player in enumerate(players_to_check, 1):
-                futures.append(executor.submit(check_player, player, position, cards_list, service))
+        with CACHE_LOCK:
+            global DECK_CACHE_DATA, DECK_CACHE_TIMESTAMP
+            current_time = time.time()
+            if current_time - DECK_CACHE_TIMESTAMP > CACHE_TTL or not DECK_CACHE_DATA:
+                # Fetch leaderboard
+                leaderboard_data = service.get_pol_leaderboard('current')
+                players = leaderboard_data.get('items', [])
                 
-            for future in futures:
-                result = future.result()
-                if result:
-                    matching_decks.append(result)
+                # We can now handle 1000 since it is concurrent
+                LIMIT = 1000
+                players_to_check = players[:LIMIT]
+                
+                fetched_decks = []
+                with ThreadPoolExecutor(max_workers=20) as executor:
+                    futures = []
+                    for position, player in enumerate(players_to_check, 1):
+                        futures.append(executor.submit(fetch_player_deck, player, position, service))
+                        
+                    for future in futures:
+                        result = future.result()
+                        if result:
+                            fetched_decks.append(result)
+                
+                DECK_CACHE_DATA = fetched_decks
+                DECK_CACHE_TIMESTAMP = current_time
+
+        matching_decks = []
+        for cached_deck in DECK_CACHE_DATA:
+            if all(is_card_in_deck(req_card, cached_deck['deck']) for req_card in cards_list):
+                matching_decks.append(cached_deck)
                 
         return jsonify({
             'success': True,

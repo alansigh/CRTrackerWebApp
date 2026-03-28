@@ -232,13 +232,14 @@ class ClashRoyaleService:
         endpoint = "cards"
         return self._make_request(endpoint)
     
-    def get_pol_leaderboard(self, season: str) -> Dict[str, Any]:
+    def get_pol_leaderboard(self, season: str, limit: int = 1000) -> Dict[str, Any]:
+        params = {'limit': limit}
         if (season == 'current'):
             endpoint = "locations/global/pathoflegend/players"
-            return self._make_request(endpoint)
+            return self._make_request(endpoint, params=params)
         else:
             endpoint = f'locations/global/pathoflegend/{season}/rankings/players'
-            return self._make_request(endpoint)
+            return self._make_request(endpoint, params=params)
 
     def get_tournaments(self, name: str) -> Dict[str, Any]:
         """

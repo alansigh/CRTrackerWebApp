@@ -71,6 +71,7 @@ def fetch_player_deck(player_data, position, service):
         
         player_info = service.get_player_info(player_tag) # we fetch info to get the player's name
         player_name = player_info.get('name') if isinstance(player_info, dict) else 'Unknown'
+
         return {
             'player_name': player_name,
             'player_tag': player_tag,

@@ -8,6 +8,7 @@ The Clash Royale API documentation: https://developer.clashroyale.com/api-docs
 """
 
 import requests
+import time
 from typing import Dict, Any, Optional
 from flask import current_app
 
@@ -44,41 +45,41 @@ class ClashRoyaleService:
             'Accept': 'application/json'
         })
     
-    def _make_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    def _make_request(self, endpoint: str, params: Optional[Dict[str, Any]] = None, max_retries: int = 3) -> Dict[str, Any]:
         """
-        Internal method to make HTTP requests to the Clash Royale API.
-        
-        Args:
-            endpoint (str): API endpoint path (e.g., 'players/{playerTag}')
-            params (dict): Optional query parameters for the request
-            
-        Returns:
-            dict: JSON response from the API
-            
-        Raises:
-            requests.exceptions.RequestException: If the API request fails
-            ValueError: If the API returns an error response
+        Internal method to make HTTP requests to the Clash Royale API with automatic retries.
         """
         url = f"{self.base_url}/{endpoint.lstrip('/')}"
         
-        try:
-            response = self.session.get(url, params=params, timeout=self.timeout)
-            response.raise_for_status()  # Raises an HTTPError for bad responses
-            return response.json()
-        except requests.exceptions.Timeout:
-            raise requests.exceptions.RequestException("Request to Clash Royale API timed out")
-        except requests.exceptions.HTTPError as e:
-            # Handle specific HTTP errors
-            if response.status_code == 404:
-                raise ValueError("Resource not found. Check the player tag or clan tag.")
-            elif response.status_code == 403:
-                raise ValueError("Access forbidden. Check your API key.")
-            elif response.status_code == 429:
-                raise ValueError("Rate limit exceeded. Please try again later.")
-            else:
-                raise ValueError(f"API request failed with status {response.status_code}: {response.text}")
-        except requests.exceptions.RequestException as e:
-            raise requests.exceptions.RequestException(f"Failed to connect to Clash Royale API: {str(e)}")
+        for attempt in range(max_retries):
+            try:
+                response = self.session.get(url, params=params, timeout=self.timeout)
+                response.raise_for_status()  # Raises an HTTPError for bad responses
+                return response.json()
+            except requests.exceptions.Timeout:
+                if attempt == max_retries - 1:
+                    raise requests.exceptions.RequestException("Request to Clash Royale API timed out")
+                time.sleep(2 ** attempt)
+            except requests.exceptions.HTTPError as e:
+                # Handle specific HTTP errors
+                if response.status_code == 404:
+                    raise ValueError("Resource not found. Check the player tag or clan tag.")
+                elif response.status_code == 403:
+                    raise ValueError("Access forbidden. Check your API key.")
+                elif response.status_code == 429:
+                    if attempt == max_retries - 1:
+                        raise ValueError("Rate limit exceeded. Please try again later.")
+                    time.sleep((2 ** attempt) + 0.5) # Exponential backoff + small jitter
+                else:
+                    if attempt == max_retries - 1:
+                        raise ValueError(f"API request failed with status {response.status_code}: {response.text}")
+                    time.sleep(1 + attempt)
+            except requests.exceptions.RequestException as e:
+                if attempt == max_retries - 1:
+                    raise requests.exceptions.RequestException(f"Failed to connect to Clash Royale API: {str(e)}")
+                time.sleep(1 + attempt)
+        
+        raise RuntimeError("Max retries exceeded without returning a response.")
     
     def get_player_info(self, player_tag: str) -> Dict[str, Any]:
         """

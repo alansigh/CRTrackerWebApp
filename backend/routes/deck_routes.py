@@ -115,7 +115,7 @@ def get_decks():
                 players_to_check = players[:LIMIT]
                 
                 fetched_decks = []
-                with ThreadPoolExecutor(max_workers=20) as executor:
+                with ThreadPoolExecutor(max_workers=10) as executor:
                     futures = []
                     for position, player in enumerate(players_to_check, 1):
                         futures.append(executor.submit(fetch_player_deck, player, position, service))
@@ -130,6 +130,7 @@ def get_decks():
 
         matching_decks = []
         for cached_deck in DECK_CACHE_DATA:
+            print(cached_deck['position'])
             if all(is_card_in_deck(req_card, cached_deck['deck']) for req_card in cards_list):
                 matching_decks.append(cached_deck)
                 

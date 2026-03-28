@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Archive, Filter, ArrowUpDown, Zap } from "lucide-react"
+import { Archive, Filter, ArrowUpDown, Zap, X, Loader2 } from "lucide-react"
 
 const API_BASE_URL = "http://localhost:5050/api"
 
@@ -13,6 +13,12 @@ function CardList() {
   const [error, setError] = useState(null)
   const [filter, setFilter] = useState("all")
   const [elixirSort, setElixirSort] = useState("none")
+  
+  const [selectedCard, setSelectedCard] = useState(null)
+  const [cardStats, setCardStats] = useState([])
+  const [cardStatsLoading, setCardStatsLoading] = useState(false)
+  const [cardStatsError, setCardStatsError] = useState(null)
+  const [selectedCardMode, setSelectedCardMode] = useState(null)
 
   useEffect(() => {
     fetchCards()
@@ -46,6 +52,35 @@ function CardList() {
       setLoading(false)
     }
   }
+
+  const handleCardClick = async (card, mode) => {
+    setSelectedCard(card);
+    setSelectedCardMode(mode);
+    setCardStatsLoading(true);
+    setCardStatsError(null);
+    setCardStats([]);
+
+    try {
+      let prefix = '';
+      if (mode === 'evolution') prefix = '1';
+      else if (mode === 'hero') prefix = '2';
+      
+      const cardQuery = `${prefix}${card.name}`;
+      
+      const response = await fetch(`${API_BASE_URL}/decks/?cards=${encodeURIComponent(cardQuery)}`);
+      const data = await response.json();
+      
+      if (!response.ok || !data.success) {
+        throw new Error(data.error || "Failed to fetch card statistics");
+      }
+      
+      setCardStats(data.data || []);
+    } catch (err) {
+      setCardStatsError(err.message);
+    } finally {
+      setCardStatsLoading(false);
+    }
+  };
 
   const applyFilters = (cardList) => {
     if (!Array.isArray(cardList)) return []
@@ -92,6 +127,7 @@ function CardList() {
     return (
       <div 
         key={`${mode}-${card.id || card.name}`} 
+        onClick={() => handleCardClick(card, mode)}
         className={`bg-[#181822] rounded-2xl border-2 p-4 flex flex-col items-center justify-between shadow-skeuo-outset group hover:-translate-y-2 hover:scale-[1.05] transition-all duration-300 cursor-pointer ${rarityClasses}`}
       >
         <div className="absolute top-2 left-2 flex items-center justify-center w-6 h-6 rounded-full bg-obsidian border border-slate-light shadow-skeuo-inset font-mono text-[10px] text-ivory">
@@ -231,6 +267,104 @@ function CardList() {
             </div>
           )}
         </>
+      )}
+
+      {/* Card Stats Modal */}
+      {selectedCard && (
+        <div className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4 backdrop-blur-sm">
+          <div className="bg-[#12121A] border-2 border-slate-light rounded-3xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-skeuo-outset">
+            {/* Modal Header */}
+            <div className="flex justify-between items-center p-6 border-b border-white/10 bg-obsidian">
+              <div className="flex items-center gap-4">
+                <div className={`w-12 h-12 rounded-xl overflow-hidden flex items-center justify-center bg-slate-900 border ${getRarityColorClass(selectedCard.rarity).split(' ')[1]}`}>
+                  <img 
+                    src={selectedCardMode === 'evolution' ? (selectedCard.iconUrls?.evolutionMedium || selectedCard.iconUrls?.medium) : 
+                         selectedCardMode === 'hero' ? (selectedCard.iconUrls?.heroMedium || selectedCard.iconUrls?.medium) : 
+                         selectedCard.iconUrls?.medium} 
+                    alt={selectedCard.name}
+                    className="w-full h-full object-contain"
+                  />
+                </div>
+                <div>
+                  <h2 className="text-2xl font-bold text-ivory tracking-wide">{selectedCard.name}</h2>
+                  <p className="text-slate-400 font-mono text-xs uppercase tracking-widest">
+                    {selectedCardMode} • {selectedCard.rarity}
+                  </p>
+                </div>
+              </div>
+              <button 
+                onClick={() => setSelectedCard(null)}
+                className="p-2 text-slate-400 hover:text-white bg-slate-800/50 hover:bg-slate-700 rounded-full transition-colors"
+                aria-label="Close modal"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto flex-1">
+              {cardStatsLoading ? (
+                <div className="flex flex-col items-center justify-center py-20 text-champagne">
+                  <Loader2 size={48} className="animate-spin mb-4" />
+                  <p className="font-mono tracking-widest animate-pulse text-sm">ANALYZING TOP 1000 DECKS...</p>
+                </div>
+              ) : cardStatsError ? (
+                <div className="bg-red-950/30 border border-red-500/50 rounded-xl p-6 text-red-400 font-mono text-center shadow-skeuo-inset">
+                  [ERR] {cardStatsError}
+                </div>
+              ) : (
+                <div className="space-y-8">
+                  {/* Stats Section */}
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="bg-obsidian border border-slate-light/30 rounded-2xl p-6 flex-1 shadow-skeuo-inset flex flex-col items-center justify-center">
+                      <p className="text-slate-400 font-mono text-xs tracking-widest uppercase mb-2">Usage Rate (Top 1000 PoL)</p>
+                      <p className="text-5xl font-bold text-champagne drop-shadow-[0_0_15px_rgba(201,168,76,0.3)]">
+                        {((cardStats.length / 1000) * 100).toFixed(1)}%
+                      </p>
+                      <p className="text-slate-500 text-sm mt-2 font-mono">({cardStats.length} decks found)</p>
+                    </div>
+                  </div>
+                  
+                  {/* Decks Grid */}
+                  <div>
+                    <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">CURRENT AVAILABLE DECKS</h3>
+                    {cardStats.length > 0 ? (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {cardStats.slice(0, 50).map((deckItem, idx) => (
+                          <div key={idx} className="bg-obsidian border border-slate-light/20 rounded-xl p-4 shadow-skeuo-outset">
+                            <div className="flex justify-between items-center mb-3">
+                              <span className="text-ivory font-bold text-sm truncate">{deckItem.player_name || 'Unknown'}</span>
+                              <span className="text-slate-500 font-mono text-xs">Rank #{deckItem.position || '?'}</span>
+                            </div>
+                            <div className="grid grid-cols-4 gap-2">
+                              {deckItem.deck.map((dc, i) => (
+                                <div key={i} className="relative aspect-[3/4] bg-slate-900 rounded-lg p-1 border border-slate-800 shadow-skeuo-inset">
+                                  <img 
+                                    src={dc.iconUrls?.medium} 
+                                    alt={dc.name}
+                                    title={dc.name}
+                                    className="w-full h-full object-contain filter drop-shadow-md"
+                                  />
+                                  {dc.evolutionLevel && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full border border-slate-900 drop-shadow shadow-skeuo-outset"></div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-obsidian border border-slate-light/20 rounded-xl p-8 text-center text-slate-500 font-mono">
+                        No decks found in the top 1000 using this card.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )

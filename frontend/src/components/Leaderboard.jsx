@@ -14,6 +14,16 @@ const calculateDisplayLevel = (card) => {
   return 16 - (maxLevel - currentLevel)
 }
 
+const getCardIcon = (card) => {
+  if (card.evolutionLevel === 1 && card.iconUrls?.evolutionMedium) {
+    return card.iconUrls.evolutionMedium;
+  }
+  if (card.evolutionLevel === 2 && card.iconUrls?.heroMedium) {
+    return card.iconUrls.heroMedium;
+  }
+  return card.iconUrls?.medium;
+}
+
 const generateSeasonOptions = () => {
   const options = [{ value: "current", label: "CURRENT SEASON" }]
   const currentDate = new Date()
@@ -231,8 +241,8 @@ function Leaderboard() {
                         <div className="grid grid-cols-4 md:grid-cols-8 gap-3">
                           {playerDecks[player.tag].cards.map((card, idx) => (
                             <div key={idx} className="bg-obsidian border border-slate-light/30 rounded-xl p-2 shadow-skeuo-inset flex flex-col items-center group/card">
-                              {card.iconUrls?.medium && (
-                                <img src={card.iconUrls.medium} alt={card.name} className="w-12 h-14 object-contain filter drop-shadow-md group-hover/card:scale-110 transition-transform mb-2" />
+                              {getCardIcon(card) && (
+                                <img src={getCardIcon(card)} alt={card.name} className="w-12 h-14 object-contain filter drop-shadow-md group-hover/card:scale-110 transition-transform mb-2" />
                               )}
                               <span className="font-mono text-[9px] text-slate-400">LVL {calculateDisplayLevel(card)}</span>
                             </div>

@@ -17,6 +17,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config
 from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp, deck_bp
+from extensions import cache
 
 
 def create_app(config_name='default'):
@@ -45,6 +46,11 @@ def create_app(config_name='default'):
     
     # Load configuration from config.py
     app.config.from_object(config[config_name])
+    
+    # Configure Flask-Caching
+    app.config['CACHE_TYPE'] = 'SimpleCache'
+    app.config['CACHE_DEFAULT_TIMEOUT'] = 600
+    cache.init_app(app)
     
     # Enable CORS for React frontend
     CORS(app, origins=app.config['CORS_ORIGINS'], supports_credentials=True)

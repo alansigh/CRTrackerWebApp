@@ -8,13 +8,7 @@ deck, based on top 1000 players and player levels
 from flask import Blueprint, jsonify, request
 from services.clash_royale_service import ClashRoyaleService
 from flask import current_app
-import time
-from threading import Lock
-
-DECK_CACHE_DATA = []
-DECK_CACHE_TIMESTAMP = 0.0
-CACHE_LOCK = Lock()
-CACHE_TTL = 600  # 10 minutes
+from extensions import cache
 
 deck_bp = Blueprint('decks', __name__, url_prefix='/api/decks')
 
@@ -82,6 +76,29 @@ def fetch_player_deck(player_data, position, service):
         pass
     return None
 
+@cache.cached(timeout=600, key_prefix='pol_leaderboard_decks')
+def _get_cached_leaderboard_decks():
+    service = get_clash_royale_service()
+    leaderboard_data = service.get_pol_leaderboard('current')
+    players = leaderboard_data.get('items', [])
+    
+    # We can now handle 1000 since it is concurrent
+    LIMIT = 1000
+    players_to_check = players[:LIMIT]
+    
+    fetched_decks = []
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        futures = []
+        for position, player in enumerate(players_to_check, 1):
+            futures.append(executor.submit(fetch_player_deck, player, position, service))
+            
+        for future in futures:
+            result = future.result()
+            if result:
+                fetched_decks.append(result)
+                
+    return fetched_decks
+
 @deck_bp.route('/', methods=['GET'])
 def get_decks():
     try:
@@ -100,36 +117,10 @@ def get_decks():
             }), 400
         
 
-        service = get_clash_royale_service()
-        
-        with CACHE_LOCK:
-            global DECK_CACHE_DATA, DECK_CACHE_TIMESTAMP
-            current_time = time.time()
-            if current_time - DECK_CACHE_TIMESTAMP > CACHE_TTL or not DECK_CACHE_DATA:
-                # Fetch leaderboard
-                leaderboard_data = service.get_pol_leaderboard('current')
-                players = leaderboard_data.get('items', [])
-                
-                # We can now handle 1000 since it is concurrent
-                LIMIT = 1000
-                players_to_check = players[:LIMIT]
-                
-                fetched_decks = []
-                with ThreadPoolExecutor(max_workers=10) as executor:
-                    futures = []
-                    for position, player in enumerate(players_to_check, 1):
-                        futures.append(executor.submit(fetch_player_deck, player, position, service))
-                        
-                    for future in futures:
-                        result = future.result()
-                        if result:
-                            fetched_decks.append(result)
-                
-                DECK_CACHE_DATA = fetched_decks
-                DECK_CACHE_TIMESTAMP = current_time
+        cached_decks = _get_cached_leaderboard_decks()
 
         matching_decks = []
-        for cached_deck in DECK_CACHE_DATA:
+        for cached_deck in cached_decks:
             print(cached_deck['position'])
             if all(is_card_in_deck(req_card, cached_deck['deck']) for req_card in cards_list):
                 matching_decks.append(cached_deck)

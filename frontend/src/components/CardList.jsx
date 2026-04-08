@@ -337,19 +337,27 @@ function CardList() {
                               <span className="text-slate-500 font-mono text-xs">Rank #{deckItem.position || '?'}</span>
                             </div>
                             <div className="grid grid-cols-4 gap-2">
-                              {deckItem.deck.map((dc, i) => (
-                                <div key={i} className="relative aspect-[3/4] bg-slate-900 rounded-lg p-1 border border-slate-800 shadow-skeuo-inset">
-                                  <img 
-                                    src={dc.iconUrls?.medium} 
-                                    alt={dc.name}
-                                    title={dc.name}
-                                    className="w-full h-full object-contain filter drop-shadow-md"
-                                  />
-                                  {dc.evolutionLevel && (
-                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full border border-slate-900 drop-shadow shadow-skeuo-outset"></div>
-                                  )}
-                                </div>
-                              ))}
+                              {deckItem.deck.map((dc, i) => {
+                                const iconUrl = dc.evolutionLevel === 1 
+                                  ? dc.iconUrls?.evolutionMedium || dc.iconUrls?.medium
+                                  : dc.evolutionLevel === 2 
+                                    ? dc.iconUrls?.heroMedium || dc.iconUrls?.medium
+                                    : dc.iconUrls?.medium;
+
+                                return (
+                                  <div key={i} className="relative aspect-[3/4] bg-slate-900 rounded-lg p-1 border border-slate-800 shadow-skeuo-inset">
+                                    <img 
+                                      src={iconUrl} 
+                                      alt={dc.name}
+                                      title={dc.name}
+                                      className="w-full h-full object-contain filter drop-shadow-md"
+                                    />
+                                    {dc.evolutionLevel === 1 && (
+                                      <div className="absolute -top-1 -right-1 w-3 h-3 bg-purple-500 rounded-full border border-slate-900 drop-shadow shadow-skeuo-outset"></div>
+                                    )}
+                                  </div>
+                                );
+                              })}
                             </div>
                           </div>
                         ))}

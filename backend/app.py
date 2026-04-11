@@ -17,6 +17,7 @@ from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config
 from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp, deck_bp
+from routes.deck_routes import init_deck_cache
 from extensions import cache
 
 
@@ -173,6 +174,9 @@ def create_app(config_name='default'):
             'error': 'Bad request. Please check your request parameters.'
         }), 400
     
+    # Start the background deck-cache scheduler
+    init_deck_cache(app)
+
     return app
 
 

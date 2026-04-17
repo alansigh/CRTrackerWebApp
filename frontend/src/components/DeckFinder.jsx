@@ -192,41 +192,81 @@ function DeckFinder() {
         </div>
       )}
 
-      {!loading && !error && (
-        <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-4">
-          {sortedCards.map((card) => {
-            const isSelected = selectedCards.some(c => c.displayId === card.displayId);
-            const canSelect = isSelected || selectedCards.length < 8;
+      {!loading && !error && (() => {
+        const selectedEvoCount = selectedCards.filter(c => c.type === 'evolution').length;
+        const selectedHeroCount = selectedCards.filter(c => c.type === 'hero').length;
+        const selectedCombinedCount = selectedEvoCount + selectedHeroCount;
+        const totalSelectedCount = selectedCards.length;
+        
+        const hideUnselectedEvos = totalSelectedCount >= 8 || selectedEvoCount >= 2 || selectedCombinedCount >= 3;
+        const hideUnselectedHeroes = totalSelectedCount >= 8 || selectedHeroCount >= 2 || selectedCombinedCount >= 3;
+        const hideUnselectedNormals = totalSelectedCount >= 8;
 
-            return (
-              <div 
-                key={card.displayId} 
-                onClick={() => toggleCardSelection(card)}
-                className={`bg-[#181822] rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-300 ${
-                  isSelected 
-                    ? 'opacity-100 grayscale-0 border-2 border-champagne shadow-glow-champagne scale-105 cursor-pointer z-10' 
-                    : `opacity-40 grayscale border border-slate-700/50 ${canSelect ? 'hover:opacity-60 cursor-pointer hover:scale-105' : 'cursor-not-allowed'}`
-                }`}
-              >
-                <div className="relative w-full aspect-[3/4] select-none">
-                  <img
-                    src={card.displayIcon}
-                    alt={card.name}
-                    className="absolute inset-0 w-full h-full object-contain"
-                    loading="lazy"
-                    draggable="false"
-                  />
+        const displayEvos = sortedCards.filter(c => c.type === 'evolution' && (!hideUnselectedEvos || selectedCards.some(sc => sc.displayId === c.displayId)));
+        const displayHeroes = sortedCards.filter(c => c.type === 'hero' && (!hideUnselectedHeroes || selectedCards.some(sc => sc.displayId === c.displayId)));
+        const displayNormals = sortedCards.filter(c => c.type === 'normal' && (!hideUnselectedNormals || selectedCards.some(sc => sc.displayId === c.displayId)));
+
+        const renderGrid = (cardsArray) => (
+          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 md:gap-3">
+            {cardsArray.map((card) => {
+              const isSelected = selectedCards.some(c => c.displayId === card.displayId);
+              const canSelect = isSelected || selectedCards.length < 8;
+
+              return (
+                <div 
+                  key={card.displayId} 
+                  onClick={() => toggleCardSelection(card)}
+                  className={`bg-[#181822] rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-300 ${
+                    isSelected 
+                      ? 'opacity-100 grayscale-0 border-2 border-champagne shadow-glow-champagne scale-105 cursor-pointer z-10' 
+                      : `opacity-40 grayscale border border-slate-700/50 ${canSelect ? 'hover:opacity-60 cursor-pointer hover:scale-105' : 'cursor-not-allowed'}`
+                  }`}
+                >
+                  <div className="relative w-full aspect-[3/4] select-none">
+                    <img
+                      src={card.displayIcon}
+                      alt={card.name}
+                      className="absolute inset-0 w-full h-full object-contain"
+                      loading="lazy"
+                      draggable="false"
+                    />
+                  </div>
+                  <div className="w-full text-center mt-2 flex-grow flex items-center justify-center">
+                    <span className={`font-mono text-[9px] uppercase tracking-widest block truncate px-1 ${isSelected ? 'text-champagne font-bold' : 'text-slate-400'}`}>
+                      {card.name}
+                    </span>
+                  </div>
                 </div>
-                <div className="w-full text-center mt-2 flex-grow flex items-center justify-center">
-                  <span className={`font-mono text-[9px] uppercase tracking-widest block truncate px-1 ${isSelected ? 'text-champagne font-bold' : 'text-slate-400'}`}>
-                    {card.name}
-                  </span>
-                </div>
+              )
+            })}
+          </div>
+        );
+
+        return (
+          <div className="flex flex-col gap-12">
+            {displayEvos.length > 0 && (
+              <div>
+                <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">EVOLUTIONS {totalSelectedCount >= 8 || hideUnselectedEvos ? '(LIMIT REACHED)' : ''}</h3>
+                {renderGrid(displayEvos)}
               </div>
-            )
-          })}
-        </div>
-      )}
+            )}
+            
+            {displayHeroes.length > 0 && (
+              <div>
+                <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">HEROES {totalSelectedCount >= 8 || hideUnselectedHeroes ? '(LIMIT REACHED)' : ''}</h3>
+                {renderGrid(displayHeroes)}
+              </div>
+            )}
+
+            {displayNormals.length > 0 && (
+              <div>
+                <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">ALL CARDS</h3>
+                {renderGrid(displayNormals)}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {selectedCards.length > 0 && (
         <div className="flex justify-center mt-8 mb-4">

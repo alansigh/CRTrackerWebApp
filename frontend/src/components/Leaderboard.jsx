@@ -230,7 +230,7 @@ function Leaderboard() {
                         <div className="flex flex-col md:flex-row md:items-center justify-between mb-4 gap-2">
                           <span className="font-mono text-[10px] text-champagne uppercase tracking-widest flex items-center gap-2">
                             <span className="w-2 h-2 rounded-full bg-champagne animate-pulse"></span>
-                            ACTIVE DECK TELEMETRY
+                            CURRENT RANKED DECK
                           </span>
                           {playerDecks[player.tag].battleType && (
                             <span className="font-mono text-[10px] text-slate-400 uppercase tracking-widest border border-slate-light/30 px-2 py-1 rounded bg-black/30">

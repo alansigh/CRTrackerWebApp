@@ -14,6 +14,37 @@ const calculateDisplayLevel = (card) => {
   return 16 - (maxLevel - currentLevel)
 }
 
+const getTimeAgo = (dateStr) => {
+  if (!dateStr) return '';
+  
+  let date;
+  if (dateStr.length === 20 && dateStr.includes('T')) {
+    const year = dateStr.substring(0, 4);
+    const month = dateStr.substring(4, 6);
+    const day = dateStr.substring(6, 8);
+    const hour = dateStr.substring(9, 11);
+    const min = dateStr.substring(11, 13);
+    const sec = dateStr.substring(13, 15);
+    date = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
+  } else {
+    date = new Date(dateStr);
+  }
+
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds > 0 ? seconds : 0) + " seconds ago";
+};
+
 function PlayerSearch() {
   const [playerTag, setPlayerTag] = useState("")
   const [playerData, setPlayerData] = useState(null)
@@ -263,25 +294,106 @@ function PlayerSearch() {
 
               {/* BATTLELOG VIEW */}
               {currentView === "battlelog" && battleLog && (
-                <div className="flex flex-col gap-3">
+                <div className="flex flex-col gap-6">
                   {battleLog.slice(0, 8).map((battle, index) => {
-                    const isWin = battle.team && battle.opponent && battle.team[0]?.crowns > battle.opponent[0]?.crowns;
+                    const hasTrophyChange = battle.team?.[0]?.trophyChange !== undefined && battle.team?.[0]?.trophyChange !== null;
+                    const isWin = hasTrophyChange 
+                      ? battle.team[0].trophyChange > 0 
+                      : (battle.team && battle.opponent && battle.team[0]?.crowns > battle.opponent[0]?.crowns);
+                    const isTie = !hasTrophyChange && battle.team && battle.opponent && battle.team[0]?.crowns === battle.opponent[0]?.crowns;
+
+                    const team = battle.team?.[0];
+                    const opponent = battle.opponent?.[0];
+
                     return (
-                      <div key={index} className="bg-obsidian border border-slate-light/30 p-4 rounded-xl shadow-skeuo-inset flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div className="flex items-center gap-4">
-                          <div className={`w-2 h-12 rounded-full ${isWin ? 'bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]' : 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]'}`} />
-                          <div>
-                            <span className="font-mono text-xs text-slate-400 block mb-1">{new Date(battle.battleTime).toLocaleString()}</span>
-                            <span className="font-sans font-bold text-ivory uppercase">{battle.type}</span>
+                      <div key={index} className="bg-obsidian border border-slate-light/30 rounded-xl shadow-skeuo-outset flex flex-col relative overflow-hidden">
+                        {/* Header Section */}
+                        <div className="flex items-center justify-between p-3 border-b border-slate-light/20 bg-black/20">
+                          <div className="flex flex-col">
+                            <span className={`font-sans font-black text-xl uppercase tracking-wider ${isTie ? 'text-slate-400' : isWin ? 'text-green-400' : 'text-red-400'}`}>
+                              {isTie ? 'Tie' : isWin ? 'Victory' : 'Defeat'}
+                            </span>
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-[10px] text-slate-500">{getTimeAgo(battle.battleTime)}</span>
+                              <span className="font-mono text-[10px] text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded uppercase">{battle.type}</span>
+                            </div>
                           </div>
+                          {team && opponent && (
+                            <div className="flex items-center gap-3 font-sans font-black text-2xl">
+                              <span className={isWin ? 'text-green-400' : isTie ? 'text-slate-400' : 'text-red-400'}>{team.crowns || 0}</span>
+                              <span className="text-slate-600">-</span>
+                              <span className={!isWin && !isTie ? 'text-green-400' : isTie ? 'text-slate-400' : 'text-red-400'}>{opponent.crowns || 0}</span>
+                            </div>
+                          )}
                         </div>
-                        {battle.team && battle.opponent && (
-                          <div className="flex items-center gap-4 font-mono text-xl">
-                            <span className={isWin ? 'text-green-400' : 'text-slate-500'}>{battle.team[0]?.crowns || 0}</span>
-                            <span className="text-slate-600">-</span>
-                            <span className={!isWin ? 'text-red-400' : 'text-slate-500'}>{battle.opponent[0]?.crowns || 0}</span>
+
+                        {/* Player Columns */}
+                        <div className="flex flex-col md:flex-row p-4 gap-6 md:gap-4 relative">
+                          {/* VS Divider for Desktop */}
+                          <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none">
+                            <span className="bg-obsidian text-slate-500 font-sans font-black italic border border-slate-light/20 rounded-full w-8 h-8 flex items-center justify-center z-10 shadow-skeuo-outset text-xs">
+                              VS
+                            </span>
                           </div>
-                        )}
+
+                          {/* Team */}
+                          {team && (
+                            <div className="flex-1 flex flex-col gap-3">
+                              <div className="flex flex-col">
+                                <span className="font-sans font-bold text-ivory text-lg truncate flex items-center gap-2">
+                                  {team.name}
+                                  <span className="font-mono text-[10px] text-slate-500 bg-slate-800/50 px-1 py-0.5 rounded flex items-center mb-0.5">{team.tag}</span>
+                                </span>
+                                {team.clan && <span className="font-sans text-sm text-champagne/90">{team.clan.name}</span>}
+                              </div>
+                              <div className="grid grid-cols-4 gap-2">
+                                {team.cards?.map((card, i) => {
+                                  let iconUrl = card.iconUrls?.medium;
+                                  if (card.evolutionLevel === 1) iconUrl = card.iconUrls?.evolutionMedium || iconUrl;
+                                  else if (card.evolutionLevel === 2) iconUrl = card.iconUrls?.heroMedium || iconUrl;
+                                  
+                                  return (
+                                    <div key={i} className="bg-[#181822] rounded-lg p-1 border border-slate-700/50 shadow-skeuo-outset flex flex-col items-center relative gap-1 pb-2">
+                                      <img src={iconUrl} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
+                                      <span className="absolute bottom-[-6px] bg-black text-ivory font-mono font-bold text-[9px] px-1.5 py-0 rounded border border-slate-600 z-10 whitespace-nowrap shadow-sm">
+                                        lvl.{calculateDisplayLevel(card)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Opponent */}
+                          {opponent && (
+                            <div className="flex-1 flex flex-col gap-3 md:items-end">
+                              <div className="flex flex-col md:items-end">
+                                <span className="font-sans font-bold text-ivory text-lg truncate flex items-center gap-2 md:flex-row-reverse">
+                                  {opponent.name}
+                                  <span className="font-mono text-[10px] text-slate-500 bg-slate-800/50 px-1 py-0.5 rounded flex items-center mb-0.5">{opponent.tag}</span>
+                                </span>
+                                {opponent.clan && <span className="font-sans text-sm text-red-400/90">{opponent.clan.name}</span>}
+                              </div>
+                              <div className="grid grid-cols-4 gap-2 w-full">
+                                {opponent.cards?.map((card, i) => {
+                                  let iconUrl = card.iconUrls?.medium;
+                                  if (card.evolutionLevel === 1) iconUrl = card.iconUrls?.evolutionMedium || iconUrl;
+                                  else if (card.evolutionLevel === 2) iconUrl = card.iconUrls?.heroMedium || iconUrl;
+                                  
+                                  return (
+                                    <div key={i} className="bg-[#181822] rounded-lg p-1 border border-slate-700/50 shadow-skeuo-outset flex flex-col items-center relative gap-1 pb-2">
+                                      <img src={iconUrl} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
+                                      <span className="absolute bottom-[-6px] bg-black text-ivory font-mono font-bold text-[9px] px-1.5 py-0 rounded border border-slate-600 z-10 whitespace-nowrap shadow-sm">
+                                        lvl.{calculateDisplayLevel(card)}
+                                      </span>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}

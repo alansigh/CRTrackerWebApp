@@ -128,7 +128,7 @@ function CardList() {
       <div 
         key={`${mode}-${card.id || card.name}`} 
         onClick={() => handleCardClick(card, mode)}
-        className={`bg-[#181822] rounded-2xl border-2 p-4 flex flex-col items-center justify-between shadow-skeuo-outset group hover:-translate-y-2 hover:scale-[1.05] transition-all duration-300 cursor-pointer ${rarityClasses}`}
+        className={`bg-[#181822] rounded-2xl border-2 p-2 flex flex-col items-center justify-between shadow-skeuo-outset group hover:-translate-y-2 hover:scale-[1.05] transition-all duration-300 cursor-pointer ${rarityClasses}`}
       >
         <div className="absolute top-2 left-2 flex items-center justify-center w-6 h-6 rounded-full bg-obsidian border border-slate-light shadow-skeuo-inset font-mono text-[10px] text-ivory">
           {card.elixirCost !== undefined ? card.elixirCost : '?'}
@@ -237,7 +237,7 @@ function CardList() {
           {filteredEvos.length > 0 && (
             <div className="mb-12">
               <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">EVOLUTIONS</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 md:gap-4">
                 {filteredEvos.map((card) => renderCard(card, 'evolution'))}
               </div>
             </div>
@@ -246,7 +246,7 @@ function CardList() {
           {filteredHeroes.length > 0 && (
             <div className="mb-12">
               <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">HEROES</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 md:gap-4">
                 {filteredHeroes.map((card) => renderCard(card, 'hero'))}
               </div>
             </div>
@@ -255,7 +255,7 @@ function CardList() {
           {filteredCards.length > 0 && (
             <div className="mb-12">
               <h3 className="font-sans font-bold text-xl text-ivory mb-6 pl-4 border-l-4 border-champagne">ALL CARDS</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-6">
+              <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 md:gap-4">
                 {filteredCards.map((card) => renderCard(card, 'normal'))}
               </div>
             </div>

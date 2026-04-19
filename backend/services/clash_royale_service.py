@@ -191,10 +191,12 @@ class ClashRoyaleService:
         Returns:
             dict: War log containing list of recent clan wars
         """
-        clean_tag = clan_tag.replace('#', '').upper()
-        encoded_tag = clean_tag.replace('#', '%23')
+        if clan_tag.startswith('#'):
+            clan_tag = '%23' + clan_tag[1:]
+        else :
+            clan_tag = '%23'+clan_tag
         
-        endpoint = f"clans/{encoded_tag}/warlog"
+        endpoint = f"clans/{clan_tag}/warlog"
         return self._make_request(endpoint)
     
     def get_clan_current_war(self, clan_tag: str) -> Dict[str, Any]:
@@ -212,10 +214,12 @@ class ClashRoyaleService:
                 - participants: List of participants
                 - clans: Competing clans information
         """
-        clean_tag = clan_tag.replace('#', '').upper()
-        encoded_tag = clean_tag.replace('#', '%23')
+        if clan_tag.startswith('#'):
+            clan_tag = '%23' + clan_tag[1:]
+        else :
+            clan_tag = '%23'+clan_tag
         
-        endpoint = f"clans/{encoded_tag}/currentwar"
+        endpoint = f"clans/{clan_tag}/currentwar"
         return self._make_request(endpoint)
     
     def get_cards(self) -> Dict[str, Any]:

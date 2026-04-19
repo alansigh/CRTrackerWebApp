@@ -41,6 +41,8 @@ const generateSeasonOptions = () => {
   return options
 }
 
+import PlayerProfile from "./PlayerProfile"
+
 function Leaderboard() {
   const [season, setSeason] = useState("current")
   const [leaderboardData, setLeaderboardData] = useState([])
@@ -48,6 +50,7 @@ function Leaderboard() {
   const [error, setError] = useState(null)
   const [expandedPlayer, setExpandedPlayer] = useState(null)
   const [playerDecks, setPlayerDecks] = useState({})
+  const [selectedPlayer, setSelectedPlayer] = useState(null)
 
   const fetchLeaderboard = async () => {
     setLoading(true)
@@ -127,6 +130,27 @@ function Leaderboard() {
     }
   }
 
+  const handlePlayerClick = async (playerTag) => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      const cleanTag = playerTag.replace("#", "")
+      const response = await fetch(`${API_BASE_URL}/players/${encodeURIComponent(cleanTag)}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch player data")
+      }
+
+      setSelectedPlayer(data.data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   useEffect(() => {
     fetchLeaderboard()
   }, [season])
@@ -177,7 +201,7 @@ function Leaderboard() {
         </div>
       )}
 
-      {!loading && !error && leaderboardData.length > 0 && (
+      {!loading && !error && leaderboardData.length > 0 && !selectedPlayer && (
         <div className="bg-obsidian border border-slate-light/50 rounded-2xl p-4 md:p-6 shadow-skeuo-outset relative overflow-hidden">
 
           {/* Table Header */}
@@ -194,17 +218,17 @@ function Leaderboard() {
               <div key={player.tag} className="flex flex-col border-b border-slate-light/10 last:border-0 hover:bg-slate-light/5 transition-colors rounded-xl overflow-hidden group">
 
                 {/* Row */}
-                <div
-                  className="grid grid-cols-12 gap-4 py-4 px-4 items-center cursor-pointer"
-                  onClick={() => togglePlayerExpansion(player.tag)}
-                >
+                <div className="grid grid-cols-12 gap-4 py-4 px-4 items-center">
                   <div className="col-span-2 md:col-span-1 flex justify-center">
                     <span className={`font-mono font-bold text-sm w-8 h-8 flex items-center justify-center rounded-lg shadow-skeuo-inset border ${player.rank <= 3 ? 'text-champagne border-champagne/50 glow-champagne' : 'text-slate-400 border-slate-light/30'}`}>
                       {player.rank}
                     </span>
                   </div>
 
-                  <div className="col-span-6 md:col-span-5 flex flex-col justify-center">
+                  <div 
+                    className="col-span-6 md:col-span-5 flex flex-col justify-center cursor-pointer group"
+                    onClick={() => handlePlayerClick(player.tag)}
+                  >
                     <span className="font-sans font-bold text-ivory truncate group-hover:text-champagne transition-colors">{player.name}</span>
                     <span className="font-mono text-[10px] text-slate-500">{player.tag}</span>
                   </div>
@@ -216,7 +240,10 @@ function Leaderboard() {
                   </div>
 
                   <div className="col-span-12 md:col-span-2 flex justify-end items-center mt-2 md:mt-0">
-                    <button className="text-slate-400 hover:text-ivory font-mono text-[10px] uppercase flex items-center gap-1 transition-colors bg-black/20 px-3 py-1.5 rounded border border-slate-light/20">
+                    <button 
+                      onClick={() => togglePlayerExpansion(player.tag)}
+                      className="text-slate-400 hover:text-ivory font-mono text-[10px] uppercase flex items-center gap-1 transition-colors bg-black/20 px-3 py-1.5 rounded border border-slate-light/20 cursor-pointer z-10"
+                    >
                       {expandedPlayer === player.tag ? <><ChevronUp size={12} /> HIDE DECK</> : <><ChevronDown size={12} /> VIEW DECK</>}
                     </button>
                   </div>
@@ -270,6 +297,10 @@ function Leaderboard() {
         <div className="bg-obsidian border border-slate-light/30 rounded-xl p-12 text-center font-mono text-slate-500 shadow-skeuo-inset">
           NO DATA STREAMS DETECTED FOR SPECIFIED SEASON.
         </div>
+      )}
+
+      {selectedPlayer && (
+        <PlayerProfile playerData={selectedPlayer} onBack={() => setSelectedPlayer(null)} backLabel="LEADERBOARD" />
       )}
     </div>
   )

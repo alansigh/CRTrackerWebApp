@@ -1,0 +1,367 @@
+import { useState } from "react"
+import { Shield, Target, Activity, Trophy, Crosshair, ChevronLeft } from "lucide-react"
+
+const API_BASE_URL = "http://localhost:5050/api"
+
+const calculateDisplayLevel = (card) => {
+  const maxLevels = { common: 16, rare: 14, epic: 11, legendary: 8, champion: 6 }
+  const rarity = card.rarity?.toLowerCase()
+  const currentLevel = card.level
+  const maxLevel = card.maxLevel || maxLevels[rarity]
+  if (!maxLevel) return currentLevel
+  return 16 - (maxLevel - currentLevel)
+}
+
+const getTimeAgo = (dateStr) => {
+  if (!dateStr) return '';
+  
+  let date;
+  if (dateStr.length === 20 && dateStr.includes('T')) {
+    const year = dateStr.substring(0, 4);
+    const month = dateStr.substring(4, 6);
+    const day = dateStr.substring(6, 8);
+    const hour = dateStr.substring(9, 11);
+    const min = dateStr.substring(11, 13);
+    const sec = dateStr.substring(13, 15);
+    date = new Date(`${year}-${month}-${day}T${hour}:${min}:${sec}.000Z`);
+  } else {
+    date = new Date(dateStr);
+  }
+
+  const seconds = Math.floor((new Date() - date) / 1000);
+  
+  let interval = seconds / 31536000;
+  if (interval > 1) return Math.floor(interval) + " years ago";
+  interval = seconds / 2592000;
+  if (interval > 1) return Math.floor(interval) + " months ago";
+  interval = seconds / 86400;
+  if (interval > 1) return Math.floor(interval) + " days ago";
+  interval = seconds / 3600;
+  if (interval > 1) return Math.floor(interval) + " hours ago";
+  interval = seconds / 60;
+  if (interval > 1) return Math.floor(interval) + " minutes ago";
+  return Math.floor(seconds > 0 ? seconds : 0) + " seconds ago";
+};
+
+export default function PlayerProfile({ playerData, onBack, backLabel = "BACK" }) {
+  const [currentView, setCurrentView] = useState("stats") // stats, deck, battlelog, badges
+  const [currentDeck, setCurrentDeck] = useState(null)
+  const [battleLog, setBattleLog] = useState(null)
+  const [loadingView, setLoadingView] = useState(false)
+  const [error, setError] = useState(null)
+
+  const loadViewData = async (viewType, endpoint, setter) => {
+    if (!playerData) return
+    setLoadingView(true)
+    setCurrentView(viewType)
+    setError(null)
+
+    try {
+      const cleanTag = playerData.tag.replace("#", "")
+      const response = await fetch(`${API_BASE_URL}/players/${encodeURIComponent(cleanTag)}/${endpoint}`)
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || `Failed to fetch ${viewType}`)
+      }
+      setter(data.data)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoadingView(false)
+    }
+  }
+
+  const loadDeckData = async () => {
+    if (!playerData) return
+    setLoadingView(true)
+    setCurrentView("deck")
+    setError(null)
+
+    try {
+      const cleanTag = playerData.tag.replace("#", "")
+      let response = await fetch(`${API_BASE_URL}/players/${encodeURIComponent(cleanTag)}/currentrankeddeck`)
+      let data = await response.json()
+      
+      let deckData = null;
+      let battleType = null;
+      let gameMode = null;
+
+      if (response.ok && data.success) {
+        deckData = data.data;
+        battleType = data.battleType;
+        gameMode = data.gameMode;
+      } else {
+        response = await fetch(`${API_BASE_URL}/players/${encodeURIComponent(cleanTag)}/currentdeck`)
+        data = await response.json()
+        if (response.ok && data.success) {
+          deckData = data.data;
+          battleType = data.battleType;
+          gameMode = data.gameMode;
+        } else {
+           throw new Error(data.error || "Failed to fetch deck")
+        }
+      }
+
+      setCurrentDeck({ cards: deckData, battleType, gameMode })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setLoadingView(false)
+    }
+  }
+
+  return (
+    <div className="bg-[#12121A] rounded-[2rem] border border-slate-light p-6 md:p-10 shadow-skeuo-outset flex flex-col gap-8 animate-fade-in relative z-10 w-full">
+      {onBack && (
+        <button 
+          onClick={onBack} 
+          className="absolute top-6 right-6 md:top-10 md:right-10 bg-obsidian border border-slate-light px-4 py-2 rounded-lg font-mono text-xs text-slate-400 hover:text-champagne shadow-skeuo-button hover:shadow-skeuo-button-pressed flex items-center gap-2 transition-all z-20"
+        >
+          <ChevronLeft size={14} /> {backLabel}
+        </button>
+      )}
+
+      {error && (
+        <div className="bg-red-950/30 border border-red-500/50 rounded-xl p-4 text-red-400 font-mono text-center shadow-skeuo-inset mb-4">
+          [ERR] {error}
+        </div>
+      )}
+
+      {/* Player Header */}
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-slate-light/50 pb-8 pr-32">
+        <div>
+          <span className="font-mono text-champagne text-glow-champagne text-sm tracking-widest block mb-2">{playerData.tag}</span>
+          <h3 className="font-sans font-bold text-4xl md:text-5xl text-ivory mb-2">{playerData.name}</h3>
+          <div className="flex items-center gap-4 font-mono text-sm text-slate-400">
+            <span className="flex items-center gap-1"><Shield size={14} className="text-champagne"/> LVL {playerData.expLevel}</span>
+            {playerData.clan && <span className="flex items-center gap-1"><Target size={14} className="text-champagne"/> {playerData.clan.name}</span>}
+          </div>
+        </div>
+      </div>
+
+      {/* Sub-navigation */}
+      <div className="flex flex-wrap gap-2 p-1 bg-obsidian rounded-xl shadow-skeuo-inset border border-slate-light/30">
+        {[
+          { id: 'stats', label: 'Telemetry', icon: Activity },
+          { id: 'deck', label: 'Active Deck', icon: Crosshair, onClick: loadDeckData },
+          { id: 'battlelog', label: 'Combat Log', icon: Target, onClick: () => loadViewData("battlelog", "battlelog", setBattleLog) },
+          { id: 'badges', label: 'Merits', icon: Trophy }
+        ].map((tab) => (
+          <button
+            key={tab.id}
+            onClick={tab.onClick || (() => setCurrentView(tab.id))}
+            className={`flex items-center gap-2 px-6 py-3 rounded-lg font-mono text-xs tracking-wider uppercase transition-all duration-300 flex-1 md:flex-none justify-center ${
+              currentView === tab.id 
+                ? 'bg-champagne text-obsidian shadow-glow-champagne font-bold' 
+                : 'text-slate-400 hover:text-ivory hover:bg-slate-light/20'
+            }`}
+          >
+            <tab.icon size={14} />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Loading View Data */}
+      {loadingView && (
+        <div className="h-64 flex items-center justify-center font-mono text-slate-500 animate-pulse">
+          RETRIEVING DATA PACKETS...
+        </div>
+      )}
+
+      {/* Views */}
+      {!loadingView && (
+        <div className="min-h-[300px]">
+          
+          {/* STATS VIEW */}
+          {currentView === "stats" && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {[
+                { label: "Trophies", val: playerData.trophies?.toLocaleString(), hl: "text-champagne text-glow-champagne" },
+                { label: "Best Trophies", val: playerData.bestTrophies?.toLocaleString() },
+                { label: "Wins", val: playerData.wins?.toLocaleString(), hl: "text-green-400" },
+                { label: "Losses", val: playerData.losses?.toLocaleString(), hl: "text-red-400" },
+                { label: "3-Crowns", val: playerData.threeCrownWins?.toLocaleString() },
+                { label: "Total Combats", val: playerData.battleCount?.toLocaleString() },
+                { label: "Win Rate", val: playerData.wins && playerData.losses ? ((playerData.wins / (playerData.wins + playerData.losses)) * 100).toFixed(1) + '%' : "N/A" }
+              ].map((stat, i) => (
+                <div key={i} className="bg-obsidian border border-slate-light/30 p-4 rounded-xl shadow-skeuo-inset flex flex-col justify-center">
+                  <span className="font-mono text-[10px] text-slate-500 uppercase tracking-wider mb-1">{stat.label}</span>
+                  <span className={`font-mono text-xl md:text-2xl font-bold ${stat.hl || 'text-ivory'}`}>{stat.val}</span>
+                </div>
+              ))}
+              
+              {playerData.arena && (
+                <div className="col-span-2 md:col-span-4 bg-obsidian border border-slate-light/30 p-6 rounded-xl shadow-skeuo-inset flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-full border border-champagne/30 flex items-center justify-center shadow-skeuo-inset bg-obsidian text-champagne">
+                    <Trophy size={20} />
+                  </div>
+                  <div>
+                    <span className="font-mono text-[10px] text-slate-500 uppercase tracking-wider block mb-1">Current Arena</span>
+                    <span className="font-sans font-bold text-xl text-ivory">{playerData.arena.name}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* DECK VIEW */}
+          {currentView === "deck" && currentDeck && (
+            <div className="flex flex-col gap-4">
+              {currentDeck.battleType && (
+                <div className="font-mono text-[10px] text-slate-500 uppercase tracking-widest border border-slate-light/30 px-3 py-2 rounded bg-black/30 inline-block self-start">
+                  RECORDED IN: {currentDeck.battleType.replace(/([A-Z])/g, ' $1').trim()} {currentDeck.gameMode ? `(${currentDeck.gameMode})` : ''}
+                </div>
+              )}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                {currentDeck.cards.map((card, idx) => (
+                  <div key={idx} className="bg-obsidian border border-slate-light/50 p-4 rounded-xl shadow-skeuo-outset group hover:-translate-y-1 transition-transform flex flex-col items-center flex-1">
+                    {card.iconUrls?.medium && (
+                      <div className="relative w-24 h-28 mb-4">
+                        <img src={card.iconUrls.medium} alt={card.name} className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]" />
+                      </div>
+                    )}
+                    <span className="font-sans font-bold text-sm text-ivory text-center mb-1">{card.name}</span>
+                    <span className="font-mono text-xs text-champagne bg-champagne/10 px-2 py-1 rounded">LVL {calculateDisplayLevel(card)}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* BATTLELOG VIEW */}
+          {currentView === "battlelog" && battleLog && (
+            <div className="flex flex-col gap-6">
+              {battleLog.slice(0, 8).map((battle, index) => {
+                const hasTrophyChange = battle.team?.[0]?.trophyChange !== undefined && battle.team?.[0]?.trophyChange !== null;
+                const isWin = hasTrophyChange 
+                  ? battle.team[0].trophyChange > 0 
+                  : (battle.team && battle.opponent && battle.team[0]?.crowns > battle.opponent[0]?.crowns);
+                const isTie = !hasTrophyChange && battle.team && battle.opponent && battle.team[0]?.crowns === battle.opponent[0]?.crowns;
+
+                const team = battle.team?.[0];
+                const opponent = battle.opponent?.[0];
+
+                return (
+                  <div key={index} className="bg-obsidian border border-slate-light/30 rounded-xl shadow-skeuo-outset flex flex-col relative overflow-hidden">
+                    {/* Header Section */}
+                    <div className="flex items-center justify-between p-3 border-b border-slate-light/20 bg-black/20">
+                      <div className="flex flex-col">
+                        <span className={`font-sans font-black text-xl uppercase tracking-wider ${isTie ? 'text-slate-400' : isWin ? 'text-green-400' : 'text-red-400'}`}>
+                          {isTie ? 'Tie' : isWin ? 'Victory' : 'Defeat'}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-[10px] text-slate-500">{getTimeAgo(battle.battleTime)}</span>
+                          <span className="font-mono text-[10px] text-slate-500 bg-slate-800/50 px-1.5 py-0.5 rounded uppercase">{battle.type}</span>
+                        </div>
+                      </div>
+                      {team && opponent && (
+                        <div className="flex items-center gap-3 font-sans font-black text-2xl">
+                          <span className={isWin ? 'text-green-400' : isTie ? 'text-slate-400' : 'text-red-400'}>{team.crowns || 0}</span>
+                          <span className="text-slate-600">-</span>
+                          <span className={!isWin && !isTie ? 'text-green-400' : isTie ? 'text-slate-400' : 'text-red-400'}>{opponent.crowns || 0}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Player Columns */}
+                    <div className="flex flex-col md:flex-row p-4 gap-6 md:gap-4 relative">
+                      {/* VS Divider for Desktop */}
+                      <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none">
+                        <span className="bg-obsidian text-slate-500 font-sans font-black italic border border-slate-light/20 rounded-full w-8 h-8 flex items-center justify-center z-10 shadow-skeuo-outset text-xs">
+                          VS
+                        </span>
+                      </div>
+
+                      {/* Team */}
+                      {team && (
+                        <div className="flex-1 flex flex-col gap-3">
+                          <div className="flex flex-col">
+                            <span className="font-sans font-bold text-ivory text-lg truncate flex items-center gap-2">
+                              {team.name}
+                              <span className="font-mono text-[10px] text-slate-500 bg-slate-800/50 px-1 py-0.5 rounded flex items-center mb-0.5">{team.tag}</span>
+                            </span>
+                            {team.clan && <span className="font-sans text-sm text-champagne/90">{team.clan.name}</span>}
+                          </div>
+                          <div className="grid grid-cols-4 gap-2">
+                            {team.cards?.map((card, i) => {
+                              let iconUrl = card.iconUrls?.medium;
+                              if (card.evolutionLevel === 1) iconUrl = card.iconUrls?.evolutionMedium || iconUrl;
+                              else if (card.evolutionLevel === 2) iconUrl = card.iconUrls?.heroMedium || iconUrl;
+                              
+                              return (
+                                <div key={i} className="bg-[#181822] rounded-lg p-1 border border-slate-700/50 shadow-skeuo-outset flex flex-col items-center relative gap-1 pb-2">
+                                  <img src={iconUrl} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
+                                  <span className="absolute bottom-[-6px] bg-black text-ivory font-mono font-bold text-[9px] px-1.5 py-0 rounded border border-slate-600 z-10 whitespace-nowrap shadow-sm">
+                                    lvl.{calculateDisplayLevel(card)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Opponent */}
+                      {opponent && (
+                        <div className="flex-1 flex flex-col gap-3 md:items-end">
+                          <div className="flex flex-col md:items-end">
+                            <span className="font-sans font-bold text-ivory text-lg truncate flex items-center gap-2 md:flex-row-reverse">
+                              {opponent.name}
+                              <span className="font-mono text-[10px] text-slate-500 bg-slate-800/50 px-1 py-0.5 rounded flex items-center mb-0.5">{opponent.tag}</span>
+                            </span>
+                            {opponent.clan && <span className="font-sans text-sm text-red-400/90">{opponent.clan.name}</span>}
+                          </div>
+                          <div className="grid grid-cols-4 gap-2 w-full">
+                            {opponent.cards?.map((card, i) => {
+                              let iconUrl = card.iconUrls?.medium;
+                              if (card.evolutionLevel === 1) iconUrl = card.iconUrls?.evolutionMedium || iconUrl;
+                              else if (card.evolutionLevel === 2) iconUrl = card.iconUrls?.heroMedium || iconUrl;
+                              
+                              return (
+                                <div key={i} className="bg-[#181822] rounded-lg p-1 border border-slate-700/50 shadow-skeuo-outset flex flex-col items-center relative gap-1 pb-2">
+                                  <img src={iconUrl} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
+                                  <span className="absolute bottom-[-6px] bg-black text-ivory font-mono font-bold text-[9px] px-1.5 py-0 rounded border border-slate-600 z-10 whitespace-nowrap shadow-sm">
+                                    lvl.{calculateDisplayLevel(card)}
+                                  </span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {/* BADGES VIEW */}
+          {currentView === "badges" && playerData.badges && (
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {playerData.badges.map((badge, idx) => (
+                <div key={idx} className="bg-obsidian border border-slate-light/30 p-6 rounded-xl shadow-skeuo-inset flex flex-col items-center justify-center text-center">
+                  {badge.iconUrls?.large && (
+                    <div className="relative w-16 h-16 mb-4">
+                       <img src={badge.iconUrls.large} alt={badge.name} className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_0_15px_rgba(201,168,76,0.3)]" />
+                    </div>
+                  )}
+                  <span className="font-sans font-bold text-xs text-ivory mb-2 leading-tight">{badge.name}</span>
+                  {badge.progress && (
+                    <span className="font-mono text-[10px] text-slate-400 border border-slate-700 rounded px-2 py-1 bg-black/50">
+                      {badge.progress}/{badge.target || badge.maxLevel}
+                    </span>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+
+        </div>
+      )}
+
+    </div>
+  )
+}

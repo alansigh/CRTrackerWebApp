@@ -12,6 +12,16 @@ const calculateDisplayLevel = (card) => {
   return 16 - (maxLevel - currentLevel)
 }
 
+const getCardIcon = (card) => {
+  if (card.evolutionLevel === 1 && card.iconUrls?.evolutionMedium) {
+    return card.iconUrls.evolutionMedium;
+  }
+  if (card.evolutionLevel === 2 && card.iconUrls?.heroMedium) {
+    return card.iconUrls.heroMedium;
+  }
+  return card.iconUrls?.medium;
+}
+
 const getTimeAgo = (dateStr) => {
   if (!dateStr) return '';
   
@@ -217,9 +227,9 @@ export default function PlayerProfile({ playerData, onBack, backLabel = "BACK" }
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {currentDeck.cards.map((card, idx) => (
                   <div key={idx} className="bg-obsidian border border-slate-light/50 p-4 rounded-xl shadow-skeuo-outset group hover:-translate-y-1 transition-transform flex flex-col items-center flex-1">
-                    {card.iconUrls?.medium && (
+                    {getCardIcon(card) && (
                       <div className="relative w-24 h-28 mb-4">
-                        <img src={card.iconUrls.medium} alt={card.name} className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]" />
+                        <img src={getCardIcon(card)} alt={card.name} className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_10px_10px_rgba(0,0,0,0.5)]" />
                       </div>
                     )}
                     <span className="font-sans font-bold text-sm text-ivory text-center mb-1">{card.name}</span>
@@ -286,13 +296,9 @@ export default function PlayerProfile({ playerData, onBack, backLabel = "BACK" }
                           </div>
                           <div className="grid grid-cols-4 gap-2">
                             {team.cards?.map((card, i) => {
-                              let iconUrl = card.iconUrls?.medium;
-                              if (card.evolutionLevel === 1) iconUrl = card.iconUrls?.evolutionMedium || iconUrl;
-                              else if (card.evolutionLevel === 2) iconUrl = card.iconUrls?.heroMedium || iconUrl;
-                              
                               return (
                                 <div key={i} className="bg-[#181822] rounded-lg p-1 border border-slate-700/50 shadow-skeuo-outset flex flex-col items-center relative gap-1 pb-2">
-                                  <img src={iconUrl} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
+                                  <img src={getCardIcon(card)} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
                                   <span className="absolute bottom-[-6px] bg-black text-ivory font-mono font-bold text-[9px] px-1.5 py-0 rounded border border-slate-600 z-10 whitespace-nowrap shadow-sm">
                                     lvl.{calculateDisplayLevel(card)}
                                   </span>
@@ -315,13 +321,9 @@ export default function PlayerProfile({ playerData, onBack, backLabel = "BACK" }
                           </div>
                           <div className="grid grid-cols-4 gap-2 w-full">
                             {opponent.cards?.map((card, i) => {
-                              let iconUrl = card.iconUrls?.medium;
-                              if (card.evolutionLevel === 1) iconUrl = card.iconUrls?.evolutionMedium || iconUrl;
-                              else if (card.evolutionLevel === 2) iconUrl = card.iconUrls?.heroMedium || iconUrl;
-                              
                               return (
                                 <div key={i} className="bg-[#181822] rounded-lg p-1 border border-slate-700/50 shadow-skeuo-outset flex flex-col items-center relative gap-1 pb-2">
-                                  <img src={iconUrl} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
+                                  <img src={getCardIcon(card)} alt={card.name} className="w-full object-contain aspect-[3/4] filter drop-shadow-[0_5px_5px_rgba(0,0,0,0.5)]" />
                                   <span className="absolute bottom-[-6px] bg-black text-ivory font-mono font-bold text-[9px] px-1.5 py-0 rounded border border-slate-600 z-10 whitespace-nowrap shadow-sm">
                                     lvl.{calculateDisplayLevel(card)}
                                   </span>

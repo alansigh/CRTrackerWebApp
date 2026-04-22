@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { Shield, Target, Activity, Trophy, Crosshair, ChevronLeft } from "lucide-react"
+import { getCardIcon } from "../utils/cardUtils"
 
 const API_BASE_URL = "http://localhost:5050/api"
 
@@ -12,15 +13,7 @@ const calculateDisplayLevel = (card) => {
   return 16 - (maxLevel - currentLevel)
 }
 
-const getCardIcon = (card) => {
-  if (card.evolutionLevel === 1 && card.iconUrls?.evolutionMedium) {
-    return card.iconUrls.evolutionMedium;
-  }
-  if (card.evolutionLevel === 2 && card.iconUrls?.heroMedium) {
-    return card.iconUrls.heroMedium;
-  }
-  return card.iconUrls?.medium;
-}
+
 
 const getTimeAgo = (dateStr) => {
   if (!dateStr) return '';

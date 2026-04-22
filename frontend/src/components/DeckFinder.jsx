@@ -1,7 +1,7 @@
 "use client"
-
 import { useState, useEffect } from "react"
 import { Search, ArrowUpDown } from "lucide-react"
+import { getCardIcon } from "../utils/cardUtils"
 
 const API_BASE_URL = "http://localhost:5050/api"
 
@@ -46,21 +46,21 @@ function DeckFinder() {
       const normalizedEvos = evoCards.map(c => ({
         ...c,
         displayId: `evo-${c.id}`,
-        displayIcon: c.iconUrls?.evolutionMedium || c.iconUrls?.medium,
+        displayIcon: getCardIcon(c, 'evolution'),
         type: 'evolution'
       }))
       
       const normalizedHeroes = heroCards.map(c => ({
         ...c,
         displayId: `hero-${c.id}`,
-        displayIcon: c.iconUrls?.heroMedium || c.iconUrls?.medium,
+        displayIcon: getCardIcon(c, 'hero'),
         type: 'hero'
       }))
 
       const normalizedNormal = normalCards.map(c => ({
         ...c,
         displayId: `normal-${c.id}`,
-        displayIcon: c.iconUrls?.medium,
+        displayIcon: getCardIcon(c, 'normal'),
         type: 'normal'
       }))
 
@@ -303,11 +303,7 @@ function DeckFinder() {
                 </div>
                 <div className="grid grid-cols-4 md:grid-cols-8 gap-4">
                   {deckObj.deck.map((dc, i) => {
-                    const iconUrl = dc.evolutionLevel === 1 
-                      ? dc.iconUrls?.evolutionMedium || dc.iconUrls?.medium
-                      : dc.evolutionLevel === 2 
-                        ? dc.iconUrls?.heroMedium || dc.iconUrls?.medium
-                        : dc.iconUrls?.medium;
+                    const iconUrl = getCardIcon(dc);
 
                     return (
                       <div key={i} className="bg-[#181822] rounded-xl p-2 border border-slate-700/50 shadow-skeuo-outset">

@@ -17,6 +17,7 @@ export default {
         sans: ['Inter', 'sans-serif'],
         drama: ['"Playfair Display"', 'serif'],
         mono: ['"JetBrains Mono"', 'monospace'],
+        clash: ['Clash', 'sans-serif'],
       },
       boxShadow: {
         'skeuo-inset': 'inset 2px 2px 5px rgba(0, 0, 0, 0.5), inset -2px -2px 5px rgba(255, 255, 255, 0.05)',

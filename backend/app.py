@@ -16,8 +16,9 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from config import config
-from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp, deck_bp
+from routes import player_bp, clan_bp, card_bp, tournament_bp, leaderboard_bp, deck_bp, winrate_bp
 from routes.deck_routes import init_deck_cache
+from services.winrate_service import init_winrate_tracker
 from extensions import cache
 
 
@@ -63,6 +64,7 @@ def create_app(config_name='default'):
     app.register_blueprint(tournament_bp)  
     app.register_blueprint(leaderboard_bp)
     app.register_blueprint(deck_bp)
+    app.register_blueprint(winrate_bp)
     
     # Root endpoint - API health check
     @app.route('/')
@@ -174,8 +176,9 @@ def create_app(config_name='default'):
             'error': 'Bad request. Please check your request parameters.'
         }), 400
     
-    # Start the background deck-cache scheduler
+    # Start the background schedulers
     init_deck_cache(app)
+    init_winrate_tracker(app)
 
     return app
 

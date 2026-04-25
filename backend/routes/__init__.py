@@ -11,7 +11,8 @@ from .card_routes import card_bp
 from .tournament_routes import tournament_bp
 from .leaderboard_routes import leaderboard_bp
 from .deck_routes import deck_bp
+from .winrate_routes import winrate_bp
 
-__all__ = ['player_bp', 'clan_bp', 'card_bp', 'tournament_bp', 'leaderboard_bp', 'deck_bp']
+__all__ = ['player_bp', 'clan_bp', 'card_bp', 'tournament_bp', 'leaderboard_bp', 'deck_bp', 'winrate_bp']
 
 

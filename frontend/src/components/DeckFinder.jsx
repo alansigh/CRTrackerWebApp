@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react"
 import { Search, ArrowUpDown } from "lucide-react"
 import { getCardIcon } from "../utils/cardUtils"
+import elixirIcon from "../assets/Icon_HV_Resource_Elixir_1.png"
 
 const API_BASE_URL = "http://localhost:5050/api"
 
@@ -207,7 +208,7 @@ function DeckFinder() {
         const displayNormals = sortedCards.filter(c => c.type === 'normal' && (!hideUnselectedNormals || selectedCards.some(sc => sc.displayId === c.displayId)));
 
         const renderGrid = (cardsArray) => (
-          <div className="grid grid-cols-6 md:grid-cols-8 lg:grid-cols-10 xl:grid-cols-12 gap-2 md:gap-3">
+          <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3 md:gap-4 lg:gap-6">
             {cardsArray.map((card) => {
               const isSelected = selectedCards.some(c => c.displayId === card.displayId);
               const canSelect = isSelected || selectedCards.length < 8;
@@ -216,25 +217,32 @@ function DeckFinder() {
                 <div 
                   key={card.displayId} 
                   onClick={() => toggleCardSelection(card)}
-                  className={`bg-[#181822] rounded-xl p-2 flex flex-col items-center justify-center transition-all duration-300 ${
+                  className={`relative bg-[#181822] rounded-2xl border-2 p-2 flex flex-col items-center justify-between shadow-skeuo-outset group hover:-translate-y-2 hover:scale-[1.05] transition-all duration-300 cursor-pointer ${
                     isSelected 
-                      ? 'opacity-100 grayscale-0 border-2 border-champagne shadow-glow-champagne scale-105 cursor-pointer z-10' 
-                      : `opacity-40 grayscale border border-slate-700/50 ${canSelect ? 'hover:opacity-60 cursor-pointer hover:scale-105' : 'cursor-not-allowed'}`
+                      ? 'opacity-100 grayscale-0 border-champagne shadow-glow-champagne z-10' 
+                      : `opacity-40 grayscale border-slate-700/50 ${canSelect ? 'hover:opacity-60' : 'cursor-not-allowed'}`
                   }`}
                 >
-                  <div className="relative w-full aspect-[3/4] select-none">
+                  {/* Elixir Icon */}
+                  <div className="absolute -top-12 -left-12 z-30 flex items-center justify-center w-32 h-32 pointer-events-none">
+                    <img src={elixirIcon} alt="Elixir" className="w-full h-full object-contain filter drop-shadow-md absolute z-0" />
+                    <span className="relative z-10 text-white font-clash text-sm drop-shadow-[0_2px_2px_rgba(0,0,0,1)] flex items-center justify-center h-full pt-1">
+                      {card.elixirCost !== undefined ? card.elixirCost : '?'}
+                    </span>
+                  </div>
+
+                  <div className="relative w-full aspect-[3/4] mt-6 mb-4 select-none">
                     <img
                       src={card.displayIcon}
                       alt={card.name}
-                      className="absolute inset-0 w-full h-full object-contain"
+                      className="absolute inset-0 w-full h-full object-contain filter drop-shadow-[0_15px_15px_rgba(0,0,0,0.6)] group-hover:drop-shadow-[0_20px_20px_rgba(201,168,76,0.3)] transition-all duration-300"
                       loading="lazy"
                       draggable="false"
                     />
                   </div>
-                  <div className="w-full text-center mt-2 flex-grow flex items-center justify-center">
-                    <span className={`font-mono text-[9px] uppercase tracking-widest block truncate px-1 ${isSelected ? 'text-champagne font-bold' : 'text-slate-400'}`}>
-                      {card.name}
-                    </span>
+                  <div className="w-full text-center">
+                    <h4 className="font-sans font-bold text-sm text-ivory leading-tight truncate px-1">{card.name}</h4>
+                    <span className="font-mono text-[9px] uppercase tracking-widest mt-1 block opacity-80">{card.rarity}</span>
                   </div>
                 </div>
               )
@@ -306,7 +314,15 @@ function DeckFinder() {
                     const iconUrl = getCardIcon(dc);
 
                     return (
-                      <div key={i} className="bg-[#181822] rounded-xl p-2 border border-slate-700/50 shadow-skeuo-outset">
+                      <div key={i} className="relative bg-[#181822] rounded-xl p-2 border border-slate-700/50 shadow-skeuo-outset">
+                         {/* Elixir Icon */}
+                         <div className="absolute -top-10 -left-10 z-30 flex items-center justify-center w-24 h-24 pointer-events-none">
+                           <img src={elixirIcon} alt="Elixir" className="w-full h-full object-contain filter drop-shadow-md absolute z-0" />
+                           <span className="relative z-10 text-white font-clash text-[10px] drop-shadow-[0_1px_1px_rgba(0,0,0,1)] flex items-center justify-center h-full pt-0.5">
+                             {dc.elixirCost !== undefined ? dc.elixirCost : '?'}
+                           </span>
+                         </div>
+                         
                          <img 
                            src={iconUrl} 
                            alt={dc.name} 
